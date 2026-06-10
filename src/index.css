@@ -1,0 +1,328 @@
+/* =====================================================================
+   HAFS Whiteboard Simulation — Global Design System
+   컨셉: "빛을 다루는 조용한 실험실"
+   색 규칙: 번쩍임·문제 → amber / 잘 보임·해결 → aqua
+   ===================================================================== */
+
+/* ─── 폰트 (@import는 반드시 @tailwind보다 먼저 와야 함) ─────────── */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS 디자인 토큰 ─────────────────────────────────────────────── */
+:root {
+  /* 배경 레이어 */
+  --bg-void:       #080A12;
+  --bg-deep:       #0D1120;
+  --bg-surface:    #131829;
+  --bg-hover:      #1C2440;
+  --border-dim:    #1E2840;
+  --border-bright: #2E3F66;
+
+  /* 빛 / 중립 */
+  --ivory:         #F5F0E8;
+  --ivory-dim:     #A09888;
+  --ivory-ghost:   #35312C;
+
+  /* 경고색 — 문제·번쩍임·안 보임 */
+  --amber:         #FF8A3D;
+  --amber-bright:  #FFB870;
+  --amber-dim:     rgba(255, 138, 61, 0.14);
+  --amber-glow:    rgba(255, 138, 61, 0.32);
+
+  /* 양호색 — 좋음·잘 보임·해결 */
+  --aqua:          #4FD8C8;
+  --aqua-bright:   #7FEEE2;
+  --aqua-dim:      rgba(79, 216, 200, 0.12);
+  --aqua-glow:     rgba(79, 216, 200, 0.28);
+
+  /* 보조 — 빛 산란·바이올렛 */
+  --violet:        #8B6FE8;
+  --violet-dim:    rgba(139, 111, 232, 0.14);
+
+  /* 모션 이징 */
+  --ease-expo:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-soft:     cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─── 리셋 & 베이스 ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--ivory);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  line-height: 1.65;
+  overflow-x: hidden;
+  word-break: keep-all;
+}
+
+/* ─── 노이즈 그레인 오버레이 ──────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* ─── 스크롤바 ────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+/* ─── 선택 하이라이트 ──────────────────────────────────────────────── */
+::selection {
+  background: var(--aqua-dim);
+  color: var(--aqua-bright);
+}
+
+/* ─── 유틸리티 클래스 ──────────────────────────────────────────────── */
+
+/* 글로우 효과 */
+.glow-amber { box-shadow: 0 0 20px var(--amber-glow), 0 0 40px rgba(255,138,61,0.12); }
+.glow-aqua  { box-shadow: 0 0 20px var(--aqua-glow),  0 0 40px rgba(79,216,200,0.12); }
+.glow-violet{ box-shadow: 0 0 16px rgba(139,111,232,0.3); }
+
+/* 텍스트 글로우 */
+.text-glow-aqua  { text-shadow: 0 0 30px var(--aqua-glow); }
+.text-glow-amber { text-shadow: 0 0 30px var(--amber-glow); }
+
+/* 섹션 공통 패딩 — 빈공간 방지를 위해 의도적으로 컴팩트하게 */
+.section-pad { padding: 3.5rem 1rem; }
+@media (min-width: 768px) { .section-pad { padding: 4rem 2.5rem; } }
+@media (min-width: 1280px) { .section-pad { padding: 5rem 4rem; } }
+
+@media (max-width: 639px) {
+  .section-label {
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+  }
+
+  .glass-card {
+    border-radius: 12px;
+  }
+
+  body {
+    line-height: 1.58;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* 섹션 라벨 스타일 */
+.section-label {
+  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--aqua);
+  opacity: 0.7;
+}
+
+/* 수치/라벨 모노스페이스 */
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.no-split {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+/* 디스플레이 폰트 */
+.font-display {
+  font-family: 'Pretendard', sans-serif;
+  letter-spacing: -0.01em;
+}
+.font-subtitle { font-family: 'Space Grotesk', 'Pretendard', sans-serif; }
+
+/* 글레어 경고 배지 */
+.badge-amber {
+  background: var(--amber-dim);
+  border: 1px solid var(--amber);
+  color: var(--amber-bright);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.72rem;
+  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.badge-aqua {
+  background: var(--aqua-dim);
+  border: 1px solid var(--aqua);
+  color: var(--aqua-bright);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.72rem;
+  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* 카드 공통 */
+.glass-card {
+  background: rgba(13, 17, 32, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+}
+.glass-card:hover {
+  border-color: var(--border-bright);
+}
+
+/* 슬라이더 공통 스타일 */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-bright);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--aqua);
+  box-shadow: 0 0 10px var(--aqua-glow);
+  cursor: grab;
+  transition: transform 0.15s var(--ease-spring), box-shadow 0.15s;
+}
+input[type='range']::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.25);
+  box-shadow: 0 0 18px var(--aqua-glow);
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: var(--aqua);
+  box-shadow: 0 0 10px var(--aqua-glow);
+  cursor: grab;
+}
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-bright);
+}
+
+/* ─── 스크롤 진행 바 ────────────────────────────────────────────────── */
+.progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-bright);
+  transition: background 0.3s, transform 0.3s;
+}
+.progress-dot.active {
+  background: var(--aqua);
+  transform: scale(1.4);
+  box-shadow: 0 0 8px var(--aqua-glow);
+}
+
+/* ─── 툴팁 ─────────────────────────────────────────────────────────── */
+.tooltip-trigger {
+  border-bottom: 1px dashed var(--aqua);
+  cursor: help;
+  color: var(--aqua-bright);
+}
+
+/* ─── 그라디언트 텍스트 ─────────────────────────────────────────────── */
+.gradient-text-aqua {
+  background: linear-gradient(135deg, var(--aqua-bright), var(--violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-amber {
+  background: linear-gradient(135deg, var(--amber-bright), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── 애니메이션 정의 ───────────────────────────────────────────────── */
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 0.85; transform: scale(1.018); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33%      { transform: translate(5px, -8px) rotate(0.6deg); }
+  66%      { transform: translate(-3px, 5px) rotate(-0.4deg); }
+}
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes scan-light {
+  0%   { background-position: -150% center; }
+  100% { background-position: 250% center; }
+}
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes count-bar {
+  from { width: 0; }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.animate-breathe   { animation: breathe 5.5s cubic-bezier(0.45,0.05,0.55,0.95) infinite; }
+.animate-drift     { animation: drift 8s ease-in-out infinite; }
+.animate-float-up  { animation: float-up 6s ease-in-out infinite; }
+.animate-scan      { animation: scan-light 3.5s linear infinite; }
+.animate-rotate    { animation: rotate-slow 20s linear infinite; }
+.animate-fade-up   { animation: fade-in-up 0.8s var(--ease-expo) forwards; }
+.animate-pulse-ring{ animation: pulse-ring 2s ease-out infinite; }
+
+/* ─── prefers-reduced-motion 대응 ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
