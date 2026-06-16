@@ -20,23 +20,46 @@ export function ProgressNav() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setActive(entry.target.id)
-            setVisible(entry.target.id !== 'hero' ? true : false)
-          }
-        })
-      },
-      { threshold: 0.4, rootMargin: '-10% 0px -10% 0px' }
-    )
+    let frameId = 0
 
-    SECTIONS.forEach(s => {
-      const el = document.getElementById(s.id)
-      if (el) observer.observe(el)
-    })
-    return () => observer.disconnect()
+    const updateActiveSection = () => {
+      frameId = 0
+      const viewportCenter = window.innerHeight / 2
+      const sections = SECTIONS.map(section => document.getElementById(section.id)).filter(
+        (section): section is HTMLElement => section !== null,
+      )
+
+      const current =
+        sections.find(section => {
+          const rect = section.getBoundingClientRect()
+          return rect.top <= viewportCenter && rect.bottom > viewportCenter
+        }) ??
+        sections.reduce<HTMLElement | null>((closest, section) => {
+          if (!closest) return section
+          const distance = Math.abs(section.getBoundingClientRect().top - viewportCenter)
+          const closestDistance = Math.abs(closest.getBoundingClientRect().top - viewportCenter)
+          return distance < closestDistance ? section : closest
+        }, null)
+
+      if (current) {
+        setActive(current.id)
+        setVisible(current.id !== 'hero')
+      }
+    }
+
+    const requestUpdate = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(updateActiveSection)
+    }
+
+    updateActiveSection()
+    window.addEventListener('scroll', requestUpdate, { passive: true })
+    window.addEventListener('resize', requestUpdate)
+
+    return () => {
+      window.removeEventListener('scroll', requestUpdate)
+      window.removeEventListener('resize', requestUpdate)
+      if (frameId) window.cancelAnimationFrame(frameId)
+    }
   }, [])
 
   const scrollTo = (id: string) => {
@@ -46,56 +69,58 @@ export function ProgressNav() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.nav
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed right-2 top-1/2 z-50 flex -translate-y-1/2 flex-col items-end gap-2.5 sm:right-5 sm:gap-3"
-          aria-label="페이지 진행 표시"
-        >
-          {SECTIONS.map(s => {
-            const isActive = active === s.id
-            return (
-              <button
-                key={s.id}
-                onClick={() => scrollTo(s.id)}
-                onMouseEnter={() => setHovered(s.id)}
-                onMouseLeave={() => setHovered(null)}
-                className="group flex min-h-8 min-w-8 items-center justify-end gap-2.5"
-                aria-label={`${s.label} 섹션으로 이동`}
-                aria-current={isActive ? 'true' : undefined}
-              >
-                {/* 라벨 (hover 시 나타남) */}
-                <AnimatePresence>
-                  {hovered === s.id && (
-                    <motion.span
-                      initial={{ opacity: 0, x: 8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 6 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-xs font-subtitle font-semibold tracking-wider uppercase"
-                      style={{ color: isActive ? '#4FD8C8' : '#A09888' }}
-                    >
-                      {s.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+        <div className="progress-nav fixed top-1/2 z-50 -translate-y-1/2 sm:right-5">
+          <motion.nav
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-end gap-1 sm:gap-3"
+            aria-label="페이지 진행 표시"
+          >
+            {SECTIONS.map(s => {
+              const isActive = active === s.id
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => scrollTo(s.id)}
+                  onMouseEnter={() => setHovered(s.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  className="progress-nav__button group flex items-center justify-end gap-2.5"
+                  aria-label={`${s.label} 섹션으로 이동`}
+                  aria-current={isActive ? 'true' : undefined}
+                >
+                  {/* 라벨 (hover 시 나타남) */}
+                  <AnimatePresence>
+                    {hovered === s.id && (
+                      <motion.span
+                        initial={{ opacity: 0, x: 8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 6 }}
+                        transition={{ duration: 0.2 }}
+                        className="hidden text-xs font-subtitle font-semibold tracking-wider uppercase sm:block"
+                        style={{ color: isActive ? '#4FD8C8' : '#A09888' }}
+                      >
+                        {s.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
-                {/* 진행 점 */}
-                <motion.span
-                  animate={{
-                    scale:      isActive ? 1.5 : 1,
-                    background: isActive ? '#4FD8C8' : hovered === s.id ? '#7FEEE2' : '#2E3F66',
-                    boxShadow:  isActive ? '0 0 8px rgba(79,216,200,0.6)' : 'none',
-                  }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                  className="block w-1.5 h-1.5 rounded-full flex-shrink-0"
-                />
-              </button>
-            )
-          })}
-        </motion.nav>
+                  {/* 진행 점 */}
+                  <motion.span
+                    animate={{
+                      scale:      isActive ? 1.5 : 1,
+                      background: isActive ? '#4FD8C8' : hovered === s.id ? '#7FEEE2' : '#2E3F66',
+                      boxShadow:  isActive ? '0 0 8px rgba(79,216,200,0.6)' : 'none',
+                    }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                    className="progress-nav__dot block flex-shrink-0 rounded-full"
+                  />
+                </button>
+              )
+            })}
+          </motion.nav>
+        </div>
       )}
     </AnimatePresence>
   )

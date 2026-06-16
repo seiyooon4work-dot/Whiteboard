@@ -60,15 +60,6 @@ export interface RegressionMaterial {
   erasability: number
 }
 
-export interface RegressionCurvePoint extends RegressionPrediction {
-  x: number
-}
-
-export interface RegressionComparison {
-  material: RegressionMaterial
-  prediction: RegressionPrediction
-}
-
 /** 시뮬레이션 전체 결과 */
 export interface SimulationResult {
   /** 입력 점수 */
@@ -214,14 +205,6 @@ export function inputsFromSurfaceStructureIndex(x: number): SimulationInputs {
     frictionFit: clampScore(100 - Math.abs(surfaceIndexToStructureScore(regression.surfaceStructureIndex) - 48) * 0.7),
     surfaceStructure: surfaceIndexToStructureScore(regression.surfaceStructureIndex),
   }
-}
-
-export function generateRegressionCurve(steps = 120): RegressionCurvePoint[] {
-  return Array.from({ length: steps + 1 }, (_, i) => {
-    const x = SURFACE_STRUCTURE_RANGE.min +
-      (SURFACE_STRUCTURE_RANGE.max - SURFACE_STRUCTURE_RANGE.min) * (i / steps)
-    return { x, ...predictFromSurfaceStructureIndex(x) }
-  })
 }
 
 // ─── 좌석 배치 데이터 ────────────────────────────────────────────────────────

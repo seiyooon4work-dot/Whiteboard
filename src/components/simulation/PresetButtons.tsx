@@ -5,6 +5,7 @@ import {
   REGRESSION_MATERIALS,
   type RegressionMaterial,
 } from '../../lib/simulation'
+import { DataProvenanceBadge } from '../ui/DataProvenanceBadge'
 
 interface PresetButtonsProps {
   selectedMaterial: RegressionMaterial
@@ -15,7 +16,7 @@ export function PresetButtons({ selectedMaterial, onSelect }: PresetButtonsProps
   return (
     <div className="flex flex-col gap-3">
       <p className="section-label">재질 프리셋</p>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-1">
         {REGRESSION_MATERIALS.map((m, i) => {
           const isActive = selectedMaterial.id === m.id
           const metrics = [
@@ -34,7 +35,7 @@ export function PresetButtons({ selectedMaterial, onSelect }: PresetButtonsProps
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onSelect(m)}
-              className="flex min-w-0 flex-col gap-2.5 rounded-xl p-3 text-left transition-all"
+              className="flex min-w-0 flex-col gap-2.5 rounded-xl p-2.5 text-left transition-all sm:p-3"
               style={{
                 background: isActive
                   ? 'rgba(79,216,200,0.10)'
@@ -46,20 +47,12 @@ export function PresetButtons({ selectedMaterial, onSelect }: PresetButtonsProps
               {/* 이름 */}
               <div className="flex items-center justify-between gap-2">
                 <span
-                  className="text-sm font-subtitle font-semibold leading-tight"
+                  className="min-w-0 text-xs font-subtitle font-semibold leading-tight sm:text-sm"
                   style={{ color: isActive ? '#F5F0E8' : 'var(--ivory-dim)' }}
                 >
                   {m.name}
                 </span>
-                <span
-                  className="text-[10px] font-subtitle font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
-                  style={{
-                    color: isActive ? 'var(--aqua)' : 'var(--ivory-ghost)',
-                    background: isActive ? 'rgba(79,216,200,0.12)' : 'rgba(245,240,232,0.04)',
-                  }}
-                >
-                  실제값
-                </span>
+                <DataProvenanceBadge type="measured" compact />
               </div>
 
               {/* 4개 실제 측정값 */}

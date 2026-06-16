@@ -1,6 +1,6 @@
 // 슬라이더 + 숫자 직접 입력 복합 컨트롤
 // 슬라이더로 감을 잡고, 정확한 측정값은 숫자로 타이핑 가능
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 
 interface SliderInputProps {
@@ -29,8 +29,37 @@ export function SliderInput({
   colorScheme = 'aqua',
 }: SliderInputProps) {
   const [editing, setEditing] = useState(false)
-  const [raw, setRaw] = useState('')
+  const [draftValue, setDraftValue] = useState(value)
   const inputRef = useRef<HTMLInputElement>(null)
+  const frameRef = useRef<number | null>(null)
+  const pendingValueRef = useRef(value)
+  const draggingRef = useRef(false)
+  const onChangeRef = useRef(onChange)
+  const coarsePointerRef = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+  )
+
+  const cancelScheduledChange = () => {
+    if (frameRef.current === null) return
+    if (coarsePointerRef.current) window.clearTimeout(frameRef.current)
+    else cancelAnimationFrame(frameRef.current)
+    frameRef.current = null
+  }
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    if (!draggingRef.current) {
+      setDraftValue(value)
+      pendingValueRef.current = value
+    }
+  }, [value])
+
+  useEffect(() => () => {
+    cancelScheduledChange()
+  }, [])
 
   const accent = colorScheme === 'aqua'
     ? { text: '#4FD8C8', glow: 'rgba(79,216,200,0.3)', bg: 'rgba(79,216,200,0.08)' }
@@ -38,7 +67,7 @@ export function SliderInput({
     ? { text: '#FF8A3D', glow: 'rgba(255,138,61,0.3)',  bg: 'rgba(255,138,61,0.08)' }
     : { text: '#8B6FE8', glow: 'rgba(139,111,232,0.3)', bg: 'rgba(139,111,232,0.08)' }
 
-  const progress = (value - min) / (max - min)  // 0~1
+  const progress = Math.max(0, Math.min(1, (draftValue - min) / (max - min)))  // 0~1
 
   const commit = (str: string) => {
     const num = parseFloat(str)
@@ -46,15 +75,36 @@ export function SliderInput({
     setEditing(false)
   }
 
-  const handleRangeChange = (nextValue: string) => {
+  const scheduleRangeChange = (nextValue: string) => {
     const next = parseFloat(nextValue)
-    if (!isNaN(next)) onChange(next)
+    if (isNaN(next)) return
+
+    setDraftValue(next)
+    pendingValueRef.current = next
+    if (frameRef.current !== null) return
+
+    const commitPendingValue = () => {
+      frameRef.current = null
+      onChangeRef.current(pendingValueRef.current)
+    }
+
+    frameRef.current = coarsePointerRef.current
+      ? window.setTimeout(commitPendingValue, 40)
+      : requestAnimationFrame(commitPendingValue)
+  }
+
+  const finishRangeChange = () => {
+    draggingRef.current = false
+    if (frameRef.current !== null) {
+      cancelScheduledChange()
+      onChangeRef.current(pendingValueRef.current)
+    }
   }
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       {/* 라벨 행 */}
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-subtitle font-semibold tracking-wider uppercase"
               style={{ color: accent.text }}>
           {label}
@@ -70,8 +120,8 @@ export function SliderInput({
             max={max}
             step={step}
             autoFocus
-            className="w-24 text-right text-sm font-mono bg-transparent outline-none
-                       border-b pb-0.5"
+            inputMode="decimal"
+            className="h-11 w-28 rounded-md border px-2 text-right font-mono text-base outline-none"
             style={{ color: accent.text, borderColor: accent.text }}
             onBlur={e => commit(e.target.value)}
             onKeyDown={e => {
@@ -84,7 +134,7 @@ export function SliderInput({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setEditing(true)}
-            className="mono text-sm px-2 py-0.5 rounded-md cursor-text"
+            className="mono min-h-9 min-w-20 rounded-lg px-3 py-1.5 text-sm sm:min-h-8 sm:px-3 sm:py-1"
             style={{ color: accent.text, background: accent.bg }}
             title="클릭해 직접 입력"
           >
@@ -94,14 +144,20 @@ export function SliderInput({
       </div>
 
       {/* 슬라이더 + 트랙 */}
-      <div className="relative">
-        {/* 진행 채우기 오버레이 */}
+      <div
+        className="surface-range-wrap"
+        style={
+          {
+            '--range-accent': accent.text,
+            '--range-glow': accent.glow,
+          } as React.CSSProperties
+        }
+      >
+        <div className="surface-range-track" />
         <div
-          className="absolute top-1/2 -translate-y-1/2 left-0 h-1 rounded-l-full pointer-events-none"
+          className="surface-range-fill"
           style={{
-            width: `${progress * 100}%`,
-            background: accent.text,
-            boxShadow: `0 0 6px ${accent.glow}`,
+            width: `calc((100% - var(--range-thumb-size)) * ${progress})`,
           }}
         />
         <input
@@ -110,15 +166,15 @@ export function SliderInput({
           min={min}
           max={max}
           step={step}
-          value={value}
-          onInput={e => handleRangeChange((e.target as HTMLInputElement).value)}
-          onChange={e => handleRangeChange(e.target.value)}
-          className="relative z-10"
-          style={
-            {
-              '--range-accent': accent.text,
-            } as React.CSSProperties
-          }
+          value={draftValue}
+          onChange={e => scheduleRangeChange(e.target.value)}
+          onPointerDown={() => {
+            draggingRef.current = true
+          }}
+          onPointerUp={finishRangeChange}
+          onPointerCancel={finishRangeChange}
+          onBlur={finishRangeChange}
+          className="surface-range"
         />
       </div>
 

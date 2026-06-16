@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { generateTradeoffCurve, inputsFromSurfaceStructureIndex, type CurvePoint, type OptimalResult, type RegressionComparison, type RegressionMaterial, type SimulationInputs, type SimulationResult as LabSimulationResult } from '../lib/simulation'
+import { generateTradeoffCurve, inputsFromSurfaceStructureIndex, type CurvePoint, type OptimalResult, type RegressionMaterial, type SimulationInputs, type SimulationResult as LabSimulationResult } from '../lib/simulation'
 import { generateSurface } from '../lib/surface'
 import { calculateCrossSectionSamples, calculateReflectionSamples } from '../lib/physics'
 import { calculateMetrics } from '../lib/metrics'
@@ -49,7 +49,6 @@ type UnifiedSurfaceContextValue = {
   unifiedOptimum: UnifiedOptimizationResult | null
   curveData: CurvePoint[]
   selectedMaterial: RegressionMaterial
-  comparison: RegressionComparison
   isOptimizing: boolean
   unifiedState: UnifiedSurfaceState
   selectMaterial: (material: RegressionMaterial) => void
@@ -106,19 +105,6 @@ export function UnifiedSurfaceProvider({ children }: { children: ReactNode }) {
   const curveData = useMemo(
     () => generateTradeoffCurve(inputs),
     [inputs]
-  )
-  const comparison = useMemo<RegressionComparison>(
-    () => ({
-      material: selectedMaterial,
-      prediction: {
-        surfaceStructureIndex: selectedMaterial.surfaceStructureIndex,
-        subjectiveVisibility: selectedMaterial.subjectiveVisibility,
-        objectiveVisibility: selectedMaterial.objectiveVisibility,
-        erasability: selectedMaterial.erasability,
-        subjectiveVisibilityScaled: selectedMaterial.subjectiveVisibility * 10,
-      },
-    }),
-    [selectedMaterial]
   )
 
   const commitInputs = useCallback((nextInputs: SimulationInputs) => {
@@ -259,7 +245,6 @@ export function UnifiedSurfaceProvider({ children }: { children: ReactNode }) {
         unifiedOptimum,
         curveData,
         selectedMaterial,
-        comparison,
         isOptimizing,
         unifiedState,
         selectMaterial,

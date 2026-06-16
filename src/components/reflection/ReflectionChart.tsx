@@ -39,9 +39,26 @@ export const ReflectionChart = memo(function ReflectionChart({ metrics, specular
         </div>
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-subtitle font-semibold sm:text-xs">
+        <span
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+          style={{ color: 'var(--aqua-bright)', background: 'rgba(79,216,200,0.09)' }}
+        >
+          <span className="h-3 w-0.5 rounded-full" style={{ background: 'var(--aqua-bright)' }} />
+          정반사 기준
+        </span>
+        <span
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+          style={{ color: 'var(--amber-bright)', background: 'rgba(255,138,61,0.09)' }}
+        >
+          <span className="h-3 w-0.5 rounded-full border-l border-dashed" style={{ borderColor: 'var(--amber-bright)' }} />
+          피크
+        </span>
+      </div>
+
       <div className="h-52 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={metrics.histogram} margin={{ top: 8, right: 8, bottom: 4, left: -24 }}>
+          <BarChart data={metrics.histogram} margin={{ top: 12, right: 8, bottom: 4, left: -24 }}>
             <CartesianGrid stroke="rgba(46,63,102,0.5)" vertical={false} />
             <XAxis
               dataKey="angle"
@@ -64,21 +81,19 @@ export const ReflectionChart = memo(function ReflectionChart({ metrics, specular
             <ReferenceArea
               x1={left}
               x2={right}
-              fill="rgba(127,238,226,0.22)"
+              fill="rgba(127,238,226,0.12)"
               stroke="#7FEEE2"
-              strokeOpacity={0.42}
+              strokeOpacity={0.34}
             />
             <ReferenceLine
               x={metrics.theoreticalAngle}
               stroke="#7FEEE2"
               strokeWidth={3}
-              label={{ value: '정반사 기준', fill: '#7FEEE2', fontSize: 11, fontWeight: 700, position: 'top' }}
             />
             <ReferenceLine
               x={metrics.peakAngle}
               stroke="rgba(255,184,112,0.56)"
               strokeDasharray="3 5"
-              label={{ value: '피크', fill: 'rgba(255,184,112,0.72)', fontSize: 9, position: 'insideTopRight' }}
             />
             <Bar
               dataKey="count"

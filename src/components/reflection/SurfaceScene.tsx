@@ -120,25 +120,27 @@ function LightRays({ samples }: { samples: ReflectionSample[] }) {
 export const SurfaceScene = memo(function SurfaceScene({ surface, samples, compact = false }: SurfaceSceneProps) {
   return (
     <div
-      className={`relative ${compact ? 'h-[340px]' : 'h-[560px]'} overflow-hidden rounded-2xl`}
+      className={`relative ${compact ? 'h-[260px] sm:h-[340px]' : 'h-[420px] sm:h-[560px]'} overflow-hidden rounded-2xl`}
       style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }}
     >
-      <Canvas
-        camera={{ position: [4.9, 4.5, 5.7], fov: 39 }}
-        dpr={[1, 1.5]}
-        frameloop="demand"
-        gl={{ antialias: false, powerPreference: 'high-performance' }}
-      >
-        <color attach="background" args={['#080A12']} />
-        <fog attach="fog" args={['#080A12', 7, 12]} />
-        <ambientLight intensity={0.58} />
-        <directionalLight position={[4, 5, 3]} intensity={1.4} color="#F5F0E8" />
-        <directionalLight position={[-3, 2, -4]} intensity={0.7} color="#4FD8C8" />
-        <gridHelper args={[7.2, 28, '#2E3F66', '#1E2840']} position={[0, -0.82, 0]} />
-        <SurfaceMesh surface={surface} />
-        <LightRays samples={samples} />
-        <OrbitControls enableDamping dampingFactor={0.08} minDistance={3.2} maxDistance={8.8} />
-      </Canvas>
+      <div className="h-full w-full pointer-events-none sm:pointer-events-auto">
+        <Canvas
+          camera={{ position: [4.9, 4.5, 5.7], fov: 39 }}
+          dpr={[1, 1.5]}
+          frameloop="demand"
+          gl={{ antialias: false, powerPreference: 'high-performance' }}
+        >
+          <color attach="background" args={['#080A12']} />
+          <fog attach="fog" args={['#080A12', 7, 12]} />
+          <ambientLight intensity={0.58} />
+          <directionalLight position={[4, 5, 3]} intensity={1.4} color="#F5F0E8" />
+          <directionalLight position={[-3, 2, -4]} intensity={0.7} color="#4FD8C8" />
+          <gridHelper args={[7.2, 28, '#2E3F66', '#1E2840']} position={[0, -0.82, 0]} />
+          <SurfaceMesh surface={surface} />
+          <LightRays samples={samples} />
+          <OrbitControls enableDamping dampingFactor={0.08} minDistance={3.2} maxDistance={8.8} />
+        </Canvas>
+      </div>
 
       <div className="absolute left-4 top-4 flex gap-3 text-xs font-mono">
         <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,138,61,0.12)', color: 'var(--amber-bright)' }}>

@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { useInView } from '../hooks/useInView'
 import { MATERIALS } from '../data/materials'
 import { MEASURED_MATERIALS } from '../lib/materialData'
+import { DataProvenanceBadge } from '../components/ui/DataProvenanceBadge'
 import {
   REGRESSION_FORMULAS,
   predictFromSurfaceStructureIndex,
@@ -106,12 +107,7 @@ export function Section4Experiment() {
                 >
                   #{m.rank}
                 </span>
-                <span
-                  className="no-split font-mono text-[10px]"
-                  style={{ color: metrics.estimated ? 'var(--amber-bright)' : 'var(--ivory-dim)' }}
-                >
-                  {metrics.estimated ? '일부 추정값' : '실험 데이터'}
-                </span>
+                <DataProvenanceBadge type={metrics.estimated ? 'estimated' : 'measured'} compact />
               </div>
 
               <div>
@@ -123,11 +119,11 @@ export function Section4Experiment() {
                 </p>
               </div>
 
-              {/* 보이는 정도 바 */}
+              {/* 객관적 가시성 바 */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-subtitle" style={{ color: 'var(--ivory-dim)' }}>
-                    보이는 정도
+                    객관적 가시성
                   </span>
                   <span className="font-mono text-sm font-bold" style={{ color: m.accentColor }}>
                     {metrics.subjectiveVisibility.toFixed(2)}
@@ -145,13 +141,13 @@ export function Section4Experiment() {
                 </div>
               </div>
 
-              {/* 실험에서 함께 측정한 핵심 지표 */}
+              {/* 실험 또는 회귀 추정으로 정리한 핵심 지표 */}
               <div
                 className="grid grid-cols-3 gap-px overflow-hidden rounded-lg"
                 style={{ background: 'rgba(46,63,102,0.45)' }}
               >
                 {[
-                  { label: '객관 가시성', value: metrics.objectiveVisibility },
+                  { label: '객관적 가시성', value: metrics.objectiveVisibility },
                   { label: '지움성', value: metrics.erasability },
                   { label: '표면 구조', value: metrics.surfaceStructure },
                 ].map((metric) => (

@@ -6,7 +6,6 @@ import {
   findOptimalInputs,
   generateTradeoffCurve,
   inputsFromSurfaceStructureIndex,
-  predictFromSurfaceStructureIndex,
   REGRESSION_MATERIALS,
   REGRESSION_FORMULAS,
   SURFACE_STRUCTURE_RANGE,
@@ -17,7 +16,6 @@ import {
   type SimulationResult,
   type OptimalResult,
   type CurvePoint,
-  type RegressionComparison,
   type RegressionMaterial,
 } from '../lib/simulation'
 
@@ -29,7 +27,6 @@ interface UseSimulationReturn {
   optimalResult: OptimalResult | null
   curveData: CurvePoint[]
   selectedMaterial: RegressionMaterial
-  comparison: RegressionComparison
   isOptimizing: boolean
   selectMaterial: (material: RegressionMaterial) => void
   runOptimize: () => void
@@ -134,14 +131,6 @@ export function useSimulation(): UseSimulationReturn {
     setOptimalResult(null)
   }
 
-  const comparison = useMemo<RegressionComparison>(
-    () => ({
-      material: selectedMaterial,
-      prediction: predictFromSurfaceStructureIndex(selectedMaterial.surfaceStructureIndex),
-    }),
-    [selectedMaterial]
-  )
-
   // 권장 기준 적용: 약간의 지연을 줘 "계산 중" 느낌을 연출
   const runOptimize = () => {
     setIsOptimizing(true)
@@ -163,7 +152,6 @@ export function useSimulation(): UseSimulationReturn {
     optimalResult,
     curveData,
     selectedMaterial,
-    comparison,
     isOptimizing,
     selectMaterial,
     runOptimize,

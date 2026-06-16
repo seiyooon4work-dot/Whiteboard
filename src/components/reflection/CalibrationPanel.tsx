@@ -1,5 +1,6 @@
 import type { CalibrationSample } from '../../types/simulation'
 import { CALIBRATION_SAMPLES } from '../../lib/calibration'
+import { DataProvenanceBadge } from '../ui/DataProvenanceBadge'
 
 type CalibrationPanelProps = {
   onApplyMaterial?: (sample: CalibrationSample) => void
@@ -8,8 +9,13 @@ type CalibrationPanelProps = {
 export function CalibrationPanel({ onApplyMaterial }: CalibrationPanelProps) {
   return (
     <div className="glass-card p-5">
-      <p className="section-label mb-1">Calibration Data</p>
-      <h3 className="font-display text-lg font-bold text-ivory mb-3">실험값 보정 데이터</h3>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div>
+          <p className="section-label mb-1">Calibration Data</p>
+          <h3 className="font-display text-lg font-bold text-ivory">실험값 보정 데이터</h3>
+        </div>
+        <DataProvenanceBadge type="measured" />
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-xs">

@@ -1,6 +1,6 @@
 // ★ 섹션 5 — 완전 통합형 연구 대시보드
 // 재질 비교, 표면 설계, 3D 반사 물리, 보정 데이터, 최적화를 한 화면에서 다룬다.
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { HelpCircle, X } from 'lucide-react'
 import { useUnifiedSurfaceSimulation } from '../hooks/useUnifiedSurfaceSimulation'
@@ -10,7 +10,6 @@ import { PresetButtons } from '../components/simulation/PresetButtons'
 import { ClassroomScene } from '../components/simulation/ClassroomScene'
 import { QualityGauge } from '../components/simulation/QualityGauge'
 import { InsightText } from '../components/simulation/InsightText'
-import { RegressionChart } from '../components/simulation/RegressionChart'
 import { MetricsPanel } from '../components/reflection/MetricsPanel'
 import { CrossSectionView } from '../components/reflection/CrossSectionView'
 import { CalibrationPanel } from '../components/reflection/CalibrationPanel'
@@ -78,6 +77,12 @@ function ScoreBar({ label, value, color = 'var(--aqua)' }: { label: string; valu
 export function Section5Lab() {
   const [ref, inView] = useInView<HTMLElement>({ threshold: 0.04 })
   const [showScoreHelp, setShowScoreHelp] = useState(false)
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
+  )
+  const [mobileAnalysisOpen, setMobileAnalysisOpen] = useState(false)
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
+  const [mobile3DOpen, setMobile3DOpen] = useState(false)
   const {
     inputs,
     setInput,
@@ -90,13 +95,20 @@ export function Section5Lab() {
     optimalResult,
     unifiedOptimum,
     selectedMaterial,
-    comparison,
     isOptimizing,
     unifiedState,
     runOptimize,
     selectMaterial,
     applyCalibrationSample,
   } = useUnifiedSurfaceSimulation()
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 639px)')
+    const update = () => setIsMobile(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   const reflectionScore = calculateReflectionStabilityScore(scoringMetrics)
   const coherenceScore = calcInputCoherence(result.inputs)
@@ -172,7 +184,7 @@ export function Section5Lab() {
                 </div>
                 <QualityGauge score={result.qualityScore} size={118} />
               </div>
-              <div className="grid grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <SummaryMetric label="가상 표면 조건" value={virtualSurface} />
                 <SummaryMetric label="가까운 실제 재질" value={nearestName} tone="ivory" />
                 <SummaryMetric label="현재 정반사" value={pct(reflectionResult.metrics.specularRatio)} tone="amber" />
@@ -277,12 +289,13 @@ export function Section5Lab() {
             />
           </motion.div>
 
-          <motion.div
-            className="order-2 flex min-w-0 flex-col gap-4 sm:gap-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.04, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-          >
+          {!isMobile && (
+            <motion.div
+              className="order-2 flex min-w-0 flex-col gap-4 sm:gap-5"
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.04, duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+            >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="section-label mb-1">중심 검증 화면</p>
@@ -354,14 +367,16 @@ export function Section5Lab() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+            </motion.div>
+          )}
 
-          <motion.div
-            className="order-3 grid min-w-0 grid-cols-1 gap-4 md:col-span-2 md:grid-cols-3 xl:col-span-1 xl:grid-cols-1 xl:gap-5"
-            initial={{ opacity: 0, x: 28 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.18, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-          >
+          {!isMobile && (
+            <motion.div
+              className="order-3 grid min-w-0 grid-cols-1 gap-4 md:col-span-2 md:grid-cols-3 xl:col-span-1 xl:grid-cols-1 xl:gap-5"
+              initial={{ opacity: 0, x: 28 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: 0.18, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+            >
             <div className="glass-card p-5">
               <p className="section-label mb-1">통합 점수 구성</p>
               <h3 className="font-display text-lg font-bold text-ivory mb-4">점수 해석</h3>
@@ -378,6 +393,62 @@ export function Section5Lab() {
 
             <MetricsPanel metrics={reflectionResult.metrics} />
             <InsightText result={result} />
+            </motion.div>
+          )}
+
+          <motion.div
+            className="order-2 flex min-w-0 flex-col gap-3 sm:hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.08, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="rounded-xl p-3" style={{ background: 'rgba(13,17,32,0.54)', border: '1px solid rgba(79,216,200,0.22)' }}>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="section-label mb-1">현재 결과</p>
+                  <h3 className="font-display text-base font-bold text-ivory">핵심 점수 요약</h3>
+                </div>
+                <span className="font-mono text-xl font-bold" style={{ color: 'var(--aqua-bright)' }}>
+                  {result.qualityScore.toFixed(0)}점
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <SummaryMetric label="객관적 가시성" value={inputs.objectiveVisibility.toFixed(1)} />
+                <SummaryMetric label="지움성" value={result.weightedErasabilityScore.toFixed(1)} tone="amber" />
+                <SummaryMetric label="마찰/필기" value={inputs.frictionFit.toFixed(1)} tone="ivory" />
+                <SummaryMetric label="표면 구조" value={structureScore.toFixed(1)} />
+              </div>
+            </div>
+
+            <details
+              className="mobile-analysis-panel"
+              open={mobileAnalysisOpen}
+              onToggle={(event) => setMobileAnalysisOpen(event.currentTarget.open)}
+            >
+              <summary>2D 반사 분석 보기</summary>
+              <div className="mt-3 flex flex-col gap-3">
+                <CrossSectionView surface={reflectionResult.surface} samples={reflectionResult.crossSectionSamples} emphasis />
+                {mobileAnalysisOpen && (
+                  <Suspense fallback={<div className="glass-card h-[280px] p-4" />}>
+                    <ReflectionChart metrics={reflectionResult.metrics} specularWindow={surfaceParams.specularWindow} />
+                  </Suspense>
+                )}
+              </div>
+            </details>
+
+            <details
+              className="mobile-analysis-panel"
+              open={mobileDetailsOpen}
+              onToggle={(event) => setMobileDetailsOpen(event.currentTarget.open)}
+            >
+              <summary>세부 지표와 해석 보기</summary>
+              {mobileDetailsOpen && (
+                <div className="mt-3 flex flex-col gap-3">
+                  <MetricsPanel metrics={reflectionResult.metrics} />
+                  <InsightText result={result} />
+                </div>
+              )}
+            </details>
           </motion.div>
         </div>
 
@@ -391,7 +462,7 @@ export function Section5Lab() {
             className="flex min-w-0 flex-col gap-5 self-start"
           >
             <div
-              className="min-w-0 rounded-2xl p-3 sm:p-4"
+              className="hidden min-w-0 rounded-2xl p-3 sm:block sm:p-4"
               style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}
             >
               <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
@@ -408,7 +479,7 @@ export function Section5Lab() {
                 정량 판단은 2D 단면, 반사각 히스토그램, 통합 점수를 기준으로 봅니다.
               </p>
               <div className="mt-4">
-                {inView ? (
+                {inView && !isMobile ? (
                   <Suspense
                     fallback={
                       <div
@@ -428,7 +499,25 @@ export function Section5Lab() {
               </div>
             </div>
 
-            <RegressionChart regression={result.regression} comparison={comparison} />
+            <div className="sm:hidden">
+              <button
+                type="button"
+                onClick={() => setMobile3DOpen((open) => !open)}
+                className="mobile-analysis-trigger"
+                aria-expanded={mobile3DOpen}
+              >
+                {mobile3DOpen ? '3D 표면 닫기' : '3D 표면 보기'}
+              </button>
+              {mobile3DOpen && (
+                <div className="mt-3">
+                  <Suspense
+                    fallback={<div className="h-[240px] rounded-xl" style={{ background: '#080A12', border: '1px solid rgba(46,63,102,0.72)' }} />}
+                  >
+                    <SurfaceScene surface={reflectionResult.surface} samples={reflectionResult.samples} compact />
+                  </Suspense>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex min-w-0 flex-col gap-5 self-start">

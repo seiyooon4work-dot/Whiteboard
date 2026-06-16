@@ -12,6 +12,11 @@ export function QualityGauge({ score, size = 180 }: QualityGaugeProps) {
   const sweep = 300
   const progressDeg = (value / 100) * sweep
   const color = value >= 70 ? '#4FD8C8' : value >= 45 ? '#7FEEE2' : '#FF8A3D'
+  const ringWidth = Math.max(11, Math.min(16, size * 0.085))
+  const innerInset = Math.max(18, size * 0.2)
+  const scoreFontSize = Math.max(24, Math.min(32, size * 0.24))
+  const unitFontSize = Math.max(9, Math.min(11, size * 0.08))
+  const labelFontSize = Math.max(7.5, Math.min(9, size * 0.07))
 
   return (
     <div
@@ -27,15 +32,15 @@ export function QualityGauge({ score, size = 180 }: QualityGaugeProps) {
         className="absolute inset-0 rounded-full"
         style={{
           background: `conic-gradient(from 210deg, ${color} 0deg ${progressDeg}deg, rgba(46,63,102,0.75) ${progressDeg}deg ${sweep}deg, transparent ${sweep}deg 360deg)`,
-          mask: 'radial-gradient(farthest-side, transparent calc(100% - 16px), #000 calc(100% - 15px))',
-          WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 16px), #000 calc(100% - 15px))',
+          mask: `radial-gradient(farthest-side, transparent calc(100% - ${ringWidth + 1}px), #000 calc(100% - ${ringWidth}px))`,
+          WebkitMask: `radial-gradient(farthest-side, transparent calc(100% - ${ringWidth + 1}px), #000 calc(100% - ${ringWidth}px))`,
           filter: `drop-shadow(0 0 8px ${color}44)`,
         }}
       />
       <div
         className="absolute rounded-full"
         style={{
-          inset: 18,
+          inset: innerInset,
           background: 'var(--void)',
           boxShadow: 'inset 0 0 18px rgba(0,0,0,0.55)',
         }}
@@ -43,19 +48,19 @@ export function QualityGauge({ score, size = 180 }: QualityGaugeProps) {
       <div className="relative z-10 flex flex-col items-center">
         <span
           className="font-display font-bold leading-none"
-          style={{ fontSize: 32, color: 'var(--ivory)' }}
+          style={{ fontSize: scoreFontSize, color: 'var(--ivory)' }}
         >
           {rounded}
         </span>
         <span
-          className="mt-3 font-subtitle text-[10px] tracking-[0.2em]"
-          style={{ color: 'var(--ivory-dim)' }}
+          className="mt-2 font-subtitle tracking-[0.2em]"
+          style={{ color: 'var(--ivory-dim)', fontSize: unitFontSize }}
         >
           / 100
         </span>
         <span
-          className="mt-2 font-subtitle text-[8.5px] tracking-[0.18em]"
-          style={{ color: 'var(--ivory-dim)' }}
+          className="mt-1 font-subtitle tracking-[0.18em]"
+          style={{ color: 'var(--ivory-dim)', fontSize: labelFontSize }}
         >
           QUALITY
         </span>

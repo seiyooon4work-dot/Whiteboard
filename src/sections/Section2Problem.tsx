@@ -12,7 +12,7 @@ export function Section2Problem() {
 
   return (
     <section id="problem" ref={ref} className="relative section-pad">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* 섹션 라벨 */}
         <motion.p
           className="section-label mb-4"
@@ -44,105 +44,164 @@ export function Section2Problem() {
           2학년 전교생 약 120명을 대상으로 설문한 결과입니다.
         </motion.p>
 
-        {/* 큰 숫자 */}
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
-          <div className="flex flex-col gap-2">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(24rem,1.08fr)] xl:gap-12">
+          <div>
+            {/* 큰 숫자 */}
+            <div className="flex flex-col gap-2">
+              <motion.div
+                className="font-display font-black leading-none"
+                style={{ fontSize: 'clamp(5rem, 16vw, 11rem)' }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={inView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+              >
+                <span className="gradient-text-aqua">
+                  <CountUp to={91.7} decimals={1} suffix="%" trigger={inView} />
+                </span>
+              </motion.div>
+              <motion.p
+                className="text-sm font-body max-w-xs"
+                style={{ color: 'var(--ivory-dim)' }}
+                initial={{ opacity: 0 }}
+                animate={inView ? { opacity: 1 } : {}}
+                transition={{ delay: 0.8 }}
+              >
+                "수업 중{' '}
+                <Tooltip term="가시성" definition="눈으로 볼 수 있는 정도. 화이트보드 글씨가 얼마나 선명하게 보이는지를 뜻합니다.">
+                  <span>화이트보드가 잘 안 보인</span>
+                </Tooltip>{' '}
+                적이 있다"고 응답한 학생 비율
+              </motion.p>
+            </div>
+
+            {/* 교실 평면도 히트맵 */}
             <motion.div
-              className="font-display font-black leading-none"
-              style={{ fontSize: 'clamp(5rem, 18vw, 11rem)' }}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+              className="mt-10"
+              initial={{ opacity: 0, y: 30 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.7, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="gradient-text-aqua">
-                <CountUp to={91.7} decimals={1} suffix="%" trigger={inView} />
-              </span>
+              <p className="text-xs font-subtitle font-semibold tracking-widest uppercase mb-5"
+                 style={{ color: 'var(--ivory-dim)' }}>
+                잘 안 보인 자리 (복수 응답)
+              </p>
+              <ClassroomHeatmap inView={inView} />
             </motion.div>
-            <motion.p
-              className="text-sm font-body max-w-xs"
-              style={{ color: 'var(--ivory-dim)' }}
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ delay: 0.8 }}
-            >
-              "수업 중{' '}
-              <Tooltip term="가시성" definition="눈으로 볼 수 있는 정도. 화이트보드 글씨가 얼마나 선명하게 보이는지를 뜻합니다.">
-                <span>화이트보드가 잘 안 보인</span>
-              </Tooltip>{' '}
-              적이 있다"고 응답한 학생 비율
-            </motion.p>
           </div>
 
-          {/* 원인 막대그래프 */}
-          <div className="flex-1 w-full">
-            <p className="text-xs font-subtitle font-semibold tracking-widest uppercase mb-4"
-               style={{ color: 'var(--ivory-dim)' }}>
-              가시성 방해 원인
-            </p>
-            <div className="flex flex-col gap-3">
-              {SURVEY_DATA.causes.map((cause, i) => (
-                <motion.div
-                  key={cause.label}
-                  className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.5 + i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <span className="w-[4.5rem] flex-shrink-0 text-right text-[11px] font-body sm:w-24 sm:text-xs"
-                        style={{ color: 'var(--ivory-dim)' }}>
-                    {cause.label}
-                  </span>
-                  <div className="relative min-w-0 flex-1 h-5 rounded-full"
-                       style={{ background: 'rgba(46,63,102,0.4)' }}>
-                    <motion.div
-                      className="absolute inset-y-0 left-0 rounded-full"
-                      style={{ background: cause.color + 'CC' }}
-                      initial={{ width: 0 }}
-                      animate={inView ? { width: `${cause.percent}%` } : { width: 0 }}
-                      transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                    <motion.span
-                      className="absolute top-1/2 -translate-y-1/2 pl-2 text-xs font-mono font-bold"
-                      style={{
-                        left: `${cause.percent}%`,
-                        color: 'var(--ivory)',
-                        textShadow: '0 1px 6px rgba(13,17,32,0.9)',
-                      }}
-                      initial={{ opacity: 0 }}
-                      animate={inView ? { opacity: 1 } : { opacity: 0 }}
-                      transition={{ delay: 0.95 + i * 0.1, duration: 0.35 }}
-                    >
-                      {cause.percent}%
-                    </motion.span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            <p className="text-xs mt-3" style={{ color: 'var(--ivory-dim)' }}>
-              * 가장 큰 원인은{' '}
-              <Tooltip term="빛 반사" definition="화이트보드 표면이 거울처럼 빛을 한 방향으로 튕겨내는 현상입니다. 특정 자리에서 글씨가 빛에 가려 보이지 않게 됩니다.">
-                <span>빛 반사</span>
-              </Tooltip>
-              (34.6%) 였습니다.
-            </p>
+          <div className="flex flex-col gap-6 lg:pt-10">
+            <CauseChart inView={inView} />
+            <SeatInsightCard inView={inView} />
           </div>
         </div>
-
-        {/* 교실 평면도 히트맵 */}
-        <motion.div
-          className="mt-10"
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.7, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <p className="text-xs font-subtitle font-semibold tracking-widest uppercase mb-5"
-             style={{ color: 'var(--ivory-dim)' }}>
-            잘 안 보인 자리 (복수 응답)
-          </p>
-          <ClassroomHeatmap inView={inView} />
-        </motion.div>
       </div>
     </section>
+  )
+}
+
+function CauseChart({ inView }: { inView: boolean }) {
+  return (
+    <div className="w-full">
+      <p className="text-xs font-subtitle font-semibold tracking-widest uppercase mb-4"
+         style={{ color: 'var(--ivory-dim)' }}>
+        가시성 방해 원인
+      </p>
+      <div className="flex flex-col gap-3">
+        {SURVEY_DATA.causes.map((cause, i) => (
+          <motion.div
+            key={cause.label}
+            className="flex items-center gap-3"
+            initial={{ opacity: 0, x: -20 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.5 + i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="w-[4.5rem] flex-shrink-0 text-right text-[11px] font-body sm:w-24 sm:text-xs"
+                  style={{ color: 'var(--ivory-dim)' }}>
+              {cause.label}
+            </span>
+            <div className="relative min-w-0 flex-1 h-5 rounded-full"
+                 style={{ background: 'rgba(46,63,102,0.4)' }}>
+              <motion.div
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{ background: cause.color + 'CC' }}
+                initial={{ width: 0 }}
+                animate={inView ? { width: `${cause.percent}%` } : { width: 0 }}
+                transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              />
+              <motion.span
+                className="absolute top-1/2 -translate-y-1/2 pl-2 text-xs font-mono font-bold"
+                style={{
+                  left: `${cause.percent}%`,
+                  color: 'var(--ivory)',
+                  textShadow: '0 1px 6px rgba(13,17,32,0.9)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={inView ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: 0.95 + i * 0.1, duration: 0.35 }}
+              >
+                {cause.percent}%
+              </motion.span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <p className="text-xs mt-3" style={{ color: 'var(--ivory-dim)' }}>
+        * 가장 큰 원인은{' '}
+        <Tooltip term="빛 반사" definition="화이트보드 표면이 거울처럼 빛을 한 방향으로 튕겨내는 현상입니다. 특정 자리에서 글씨가 빛에 가려 보이지 않게 됩니다.">
+          <span>빛 반사</span>
+        </Tooltip>
+        (34.6%) 였습니다.
+      </p>
+    </div>
+  )
+}
+
+function SeatInsightCard({ inView }: { inView: boolean }) {
+  const rankedSeats = [...SURVEY_DATA.seatComplaints]
+    .filter(seat => seat.percent > 0)
+    .sort((a, b) => b.percent - a.percent)
+    .slice(0, 4)
+
+  return (
+    <motion.div
+      className="glass-card p-5 sm:p-6"
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: 0.9, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      style={{ borderColor: 'rgba(79,216,200,0.22)' }}
+    >
+      <p className="text-xs font-subtitle font-semibold tracking-widest uppercase mb-2"
+         style={{ color: 'var(--aqua)' }}>
+        좌석별 응답 요약
+      </p>
+      <h3 className="text-xl font-display font-bold mb-4" style={{ color: 'var(--ivory)' }}>
+        앞쪽 가장자리와 특정 열에서 응답이 집중됐습니다.
+      </h3>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {rankedSeats.map((seat, index) => (
+          <div
+            key={seat.id}
+            className="rounded-lg border px-4 py-3"
+            style={{
+              borderColor: index < 2 ? 'rgba(255,138,61,0.32)' : 'rgba(46,63,102,0.65)',
+              background: index < 2 ? 'rgba(255,138,61,0.07)' : 'rgba(13,17,32,0.45)',
+            }}
+          >
+            <p className="text-xs font-subtitle font-semibold tracking-widest"
+               style={{ color: index < 2 ? 'var(--amber-bright)' : 'var(--ivory-dim)' }}>
+              {seat.id === 9 ? '스탠딩 테이블' : `${seat.id}번 자리`}
+            </p>
+            <p className="mono mt-1 text-2xl font-bold"
+               style={{ color: index < 2 ? 'var(--amber-bright)' : 'var(--aqua-bright)' }}>
+              {seat.percent}%
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+        단순히 뒤쪽이라서 안 보이는 문제가 아니라, 반사 방향과 자리 위치가 겹치는 구간에서 불편이 커졌습니다.
+      </p>
+    </motion.div>
   )
 }
 

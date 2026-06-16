@@ -70,7 +70,25 @@ export function ParticleField() {
     resize()
     window.addEventListener('resize', resize)
 
-    if (reduced) {
+    const mobile = window.matchMedia('(max-width: 639px), (pointer: coarse)').matches
+
+    if (reduced || mobile) {
+      particlesRef.current = Array.from({ length: 16 }, () => {
+        const particle = createParticle(canvas.width, canvas.height)
+        particle.opacity = particle.targetOpacity * 0.65
+        return particle
+      })
+
+      particlesRef.current.forEach((p) => {
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4)
+        grad.addColorStop(0, p.color + Math.round(p.opacity * 255).toString(16).padStart(2, '0'))
+        grad.addColorStop(1, p.color + '00')
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2)
+        ctx.fillStyle = grad
+        ctx.fill()
+      })
+
       return () => window.removeEventListener('resize', resize)
     }
 

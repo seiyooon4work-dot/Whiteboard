@@ -1,48 +1,41 @@
 // 섹션 3 — 원리
 // "왜 자리마다 다르게 보일까?"
 // GSAP ScrollTrigger pin: 표면 거칠기 매끄/거침 모핑 + 광선 패턴 전환
-import { useRef, useState } from 'react'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
-import ScrollTrigger from 'gsap/ScrollTrigger'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { Tooltip } from '../components/ui/Tooltip'
 
-gsap.registerPlugin(ScrollTrigger)
-
 export function Section3Principle() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const isDraggingRef = useRef(false)
   const [progress, setProgress] = useState(0)  // 0(매끄) ~ 1(거침)
 
-  const updateProgressFromPointer = (clientX: number, target: HTMLElement) => {
-    const rect = target.getBoundingClientRect()
-    const nextProgress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-    setProgress(nextProgress)
-  }
+  useEffect(() => {
+    let frameId = 0
+    let lastProgress = -1
 
-  useGSAP(() => {
-    const media = gsap.matchMedia()
+    const updateProgress = () => {
+      const container = containerRef.current
+      if (!container) {
+        frameId = requestAnimationFrame(updateProgress)
+        return
+      }
 
-    media.add('(min-width: 1024px)', () => {
-      const proxy = { p: 0 }
-      gsap.to(proxy, {
-        p: 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          pin: true,
-          scrub: 0.8,
-          invalidateOnRefresh: true,
-          onUpdate: self => setProgress(self.progress),
-        },
-      })
-    })
+      const rect = container.getBoundingClientRect()
+      const scrollRange = Math.max(1, rect.height - window.innerHeight)
+      const nextProgress = Math.max(0, Math.min(1, -rect.top / scrollRange))
+      if (Math.abs(nextProgress - lastProgress) > 0.002) {
+        lastProgress = nextProgress
+        setProgress(nextProgress)
+      }
+      frameId = requestAnimationFrame(updateProgress)
+    }
 
-    return () => media.revert()
-  }, { scope: containerRef })
+    frameId = requestAnimationFrame(updateProgress)
+
+    return () => {
+      cancelAnimationFrame(frameId)
+    }
+  }, [])
 
   // 표면 거칠기에 따른 색 보간
   const surfaceColor = `rgba(${Math.round(245 - progress * 100)},${Math.round(240 - progress * 80)},${Math.round(232 - progress * 90)}, 0.85)`
@@ -52,12 +45,12 @@ export function Section3Principle() {
     : progress < 0.75 ? '적당히 거친 표면'
     : '매우 거친 표면'
 
-  // height = 핀 구간 길이. 160vh: 1뷰포트 고정 + 60vh 스크롤 여유
+  // height = 고정 구간 길이. 충분히 길게 잡아 표면 변화가 끝나기 전 화면이 먼저 풀리지 않게 한다.
   return (
-    <div ref={containerRef} className="h-auto lg:h-[140vh]">
+    <div ref={containerRef} className="h-[260vh] sm:h-[250vh] md:h-[240vh]">
       <section
         id="principle"
-        className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden px-4 py-14 md:px-10 md:py-16 lg:h-screen lg:px-6 lg:py-0"
+        className="sticky top-0 relative flex h-[100svh] min-h-0 flex-col items-center justify-center overflow-hidden px-4 py-8 sm:py-10 md:px-8 md:py-0 lg:px-6"
       >
         {/* 배경 그라디언트 */}
         <div className="absolute inset-0 pointer-events-none"
@@ -77,7 +70,7 @@ export function Section3Principle() {
             왜 자리마다 다르게 보일까?
           </h2>
           <p className="mb-5 max-w-md text-sm" style={{ color: 'var(--ivory-dim)' }}>
-            스크롤하거나 아래 바를 클릭·드래그하면 표면이 매끄러움 → 거침으로 바뀝니다.<br className="hidden sm:block" />
+            화면을 아래로 스크롤하면 표면이 매끄러움 → 거침으로 바뀝니다.<br className="hidden sm:block" />
             빛의 반사 패턴이 어떻게 달라지는지 보세요.
           </p>
 
@@ -142,37 +135,16 @@ export function Section3Principle() {
             </div>
           </div>
 
-          {/* 스크롤 진행 바 */}
+          {/* 읽기 전용 스크롤 진행 바 */}
           <div className="mt-5 flex items-center gap-2 sm:gap-3">
             <span className="text-[10px] font-mono sm:text-xs" style={{ color: 'var(--amber)' }}>매끄러움</span>
             <div
-              className="group relative flex-1 cursor-ew-resize py-4"
-              role="slider"
-              aria-label="표면 거칠기"
+              className="relative flex-1 py-3"
+              role="progressbar"
+              aria-label="스크롤에 따른 표면 거칠기"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(progress * 100)}
-              tabIndex={0}
-              onPointerMove={(event) => {
-                if (!isDraggingRef.current && event.buttons !== 1) return
-                updateProgressFromPointer(event.clientX, event.currentTarget)
-              }}
-              onPointerDown={(event) => {
-                isDraggingRef.current = true
-                event.currentTarget.setPointerCapture(event.pointerId)
-                updateProgressFromPointer(event.clientX, event.currentTarget)
-              }}
-              onPointerUp={(event) => {
-                isDraggingRef.current = false
-                event.currentTarget.releasePointerCapture(event.pointerId)
-              }}
-              onPointerCancel={() => {
-                isDraggingRef.current = false
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'ArrowLeft') setProgress((p) => Math.max(0, p - 0.04))
-                if (event.key === 'ArrowRight') setProgress((p) => Math.min(1, p + 0.04))
-              }}
             >
               <div className="h-1 rounded-full overflow-hidden"
                    style={{ background: 'rgba(46,63,102,0.5)' }}>
@@ -184,14 +156,6 @@ export function Section3Principle() {
                   }}
                 />
               </div>
-              <motion.div
-                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100"
-                style={{
-                  left: `calc(${progress * 100}% - 8px)`,
-                  background: progress < 0.5 ? 'var(--amber)' : 'var(--aqua)',
-                  boxShadow: '0 0 14px rgba(79,216,200,0.45)',
-                }}
-              />
             </div>
             <span className="text-[10px] font-mono sm:text-xs" style={{ color: 'var(--aqua)' }}>거침</span>
           </div>
@@ -354,7 +318,7 @@ function ReflectionDiagram({
         <text x="200" y="270" textAnchor="middle"
               fontSize="9" fill="rgba(160,152,136,0.5)"
               fontFamily="Pretendard, sans-serif">
-          스크롤하거나 아래 바를 클릭·드래그해 표면을 바꿔 보세요
+          아래로 스크롤해 표면 변화를 확인하세요
         </text>
       </svg>
     </div>

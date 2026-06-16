@@ -4,6 +4,7 @@
 import { motion } from 'motion/react'
 import { useInView } from '../hooks/useInView'
 import { GlowBadge } from '../components/ui/GlowBadge'
+import { DataProvenanceBadge } from '../components/ui/DataProvenanceBadge'
 import {
   REGRESSION_MATERIALS,
   findOptimalInputs,
@@ -89,7 +90,7 @@ export function Section6Result() {
         }}
       />
 
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <motion.p
           className="section-label mb-4"
           initial={{ opacity: 0 }}
@@ -108,7 +109,20 @@ export function Section6Result() {
           그래서, 가장 좋은<br className="hidden sm:block" /> 표면은 무엇일까요?
         </motion.h2>
 
-        <div className="grid items-start gap-7 md:grid-cols-2 md:gap-6 lg:gap-10">
+        <motion.div
+          className="mb-6 max-w-4xl rounded-xl px-4 py-3 sm:mb-8 sm:px-5 sm:py-4"
+          style={{ background: 'rgba(79,216,200,0.055)', borderLeft: '3px solid rgba(79,216,200,0.65)' }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.12, duration: 0.7 }}
+        >
+          <p className="section-label mb-1">핵심 결론</p>
+          <p className="text-sm font-medium leading-relaxed sm:text-base" style={{ color: 'var(--ivory)' }}>
+            한 가지 재질이 모든 항목에서 최고인 것은 아니며, 가시성·지움성·필기감이 함께 균형 잡힌 표면이 가장 적합합니다.
+          </p>
+        </motion.div>
+
+        <div className="grid items-start gap-7 md:grid-cols-2 md:gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-10">
           {/* 이론상 최적 표면 발표 카드 */}
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
@@ -126,9 +140,11 @@ export function Section6Result() {
                  style={{ background: 'radial-gradient(circle, rgba(79,216,200,0.10) 0%, transparent 70%)' }} />
 
             <div className="relative z-10">
-              <GlowBadge type="aqua" className="mb-5">
-                이론상 최적 표면
-              </GlowBadge>
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <GlowBadge type="aqua">이론상 최적 표면</GlowBadge>
+                <DataProvenanceBadge type="simulated" />
+                <DataProvenanceBadge type="regression" />
+              </div>
 
               <h3
                 className="font-display font-bold mb-2"
@@ -142,7 +158,7 @@ export function Section6Result() {
 
               <div className="mb-6 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:gap-4">
                 {[
-                  { label: '객관 가시성', value: theoreticalInputs.objectiveVisibility, suffix: '점', decimals: 2 },
+                  { label: '객관적 가시성', value: theoreticalInputs.objectiveVisibility, suffix: '점', decimals: 2 },
                   { label: '지움성', value: theoreticalInputs.erasability, suffix: '점', decimals: 2 },
                   { label: '마찰/필기 적정성', value: theoreticalInputs.frictionFit, suffix: '점', decimals: 2 },
                   { label: '최종 적합도',
@@ -176,10 +192,13 @@ export function Section6Result() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
           >
-            <p className="text-xs font-subtitle font-semibold tracking-widest uppercase"
-               style={{ color: 'var(--ivory-dim)' }}>
-              종합 적합도 순위 (실험 결과)
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-subtitle font-semibold tracking-widest uppercase"
+                 style={{ color: 'var(--ivory-dim)' }}>
+                실제 측정 재질 종합 순위
+              </p>
+              <DataProvenanceBadge type="measured" />
+            </div>
 
             {resultRows.map(({ material: m, result: simResult, meta }, i) => {
               return (
@@ -239,12 +258,29 @@ export function Section6Result() {
           transition={{ delay: 0.9, duration: 0.8 }}
         >
           <p className="font-subtitle font-bold text-base mb-3" style={{ color: 'var(--violet)' }}>
-            🔭 개선 방향 제안
+            적용 제안
           </p>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
             <strong style={{ color: 'var(--aqua)' }}>가시성, 지움성, 마찰 적정성, 표면 구조 점수가 함께 균형 잡힌 표면</strong>이
             새 공식에서 가장 안정적인 균형점입니다. 실제 재질 순위는 측정값 비교로 남기고, 최종 결론은 이론상 최적 표면 조건으로 해석합니다.
             이를 통해 모든 자리에서 더 공평하게 잘 보이는 교실 환경을 만들 수 있습니다.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="mt-5 rounded-xl p-4 sm:mt-6"
+          style={{ background: 'rgba(255,138,61,0.05)', border: '1px solid rgba(255,138,61,0.18)' }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 1, duration: 0.7 }}
+        >
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <DataProvenanceBadge type="regression" />
+            <p className="font-subtitle text-sm font-bold" style={{ color: 'var(--ivory)' }}>연구 해석의 한계</p>
+          </div>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+            이론상 최적 조건은 5개 재질의 실험 데이터를 이용한 경험적 회귀 모델에서 계산했습니다.
+            표본 수가 적으므로 정확한 물리 법칙이나 인과관계가 아니라, 이번 실험 범위에서 나타난 경향으로 해석해야 합니다.
           </p>
         </motion.div>
       </div>

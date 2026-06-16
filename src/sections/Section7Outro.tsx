@@ -1,5 +1,6 @@
 // 섹션 7 — 마무리
 // 연구 결론 한 문장 + 팀 크레딧 + SIMULATION 타이포 리프라이즈
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { useInView } from '../hooks/useInView'
 
@@ -11,12 +12,35 @@ const TEAM = [
   { role: 'Member',  name: 'Yoonhan Hwang',  initial: 'H' },
 ]
 
-export function Section7Outro() {
-  const [ref, inView] = useInView<HTMLElement>({ threshold: 0.2 })
+type Section7OutroProps = {
+  onRestart: () => void
+}
 
-  // min-h-screen 제거 — section-pad 패딩으로 충분한 여백 확보
+export function Section7Outro({ onRestart }: Section7OutroProps) {
+  const [ref, inView] = useInView<HTMLElement>({ threshold: 0.2 })
+  const [restarting, setRestarting] = useState(false)
+
+  const restartFromTop = () => {
+    if (restarting) return
+
+    setRestarting(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    const startedAt = performance.now()
+    const waitForTop = () => {
+      if (window.scrollY <= 2 || performance.now() - startedAt > 2400) {
+        window.scrollTo({ top: 0 })
+        onRestart()
+        return
+      }
+      requestAnimationFrame(waitForTop)
+    }
+
+    requestAnimationFrame(waitForTop)
+  }
+
   return (
-    <section id="outro" ref={ref} className="relative section-pad flex flex-col items-center justify-center overflow-hidden">
+    <section id="outro" ref={ref} className="relative flex min-h-[680px] flex-col items-center justify-center overflow-hidden px-4 py-12 sm:min-h-[720px] sm:px-8 sm:py-14 lg:min-h-[680px] lg:py-16">
       {/* 배경 그라디언트 */}
       <div className="absolute inset-0 pointer-events-none"
            style={{
@@ -43,7 +67,7 @@ export function Section7Outro() {
         </span>
       </motion.div>
 
-      <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-8 text-center sm:gap-10 lg:gap-12">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-7 text-center sm:gap-8 lg:gap-9">
         {/* 결론 문장 */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
@@ -83,7 +107,7 @@ export function Section7Outro() {
             HAFS EUREKA RESEARCH PROJECT — 2026. 06
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-4 sm:grid-cols-5 sm:gap-5 lg:gap-7">
             {TEAM.map((member, i) => (
               <motion.div
                 key={member.name}
@@ -126,8 +150,11 @@ export function Section7Outro() {
 
         {/* 맨 위로 */}
         <motion.button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="flex flex-col items-center gap-2 group"
+          type="button"
+          onClick={restartFromTop}
+          disabled={restarting}
+          className="group flex flex-col items-center gap-2 disabled:cursor-wait disabled:opacity-70"
+          aria-label="세션을 초기화하고 처음으로 이동"
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 1.4 }}
@@ -144,7 +171,7 @@ export function Section7Outro() {
           </motion.div>
           <span className="text-xs font-subtitle tracking-widest uppercase"
                 style={{ color: 'var(--ivory-dim)' }}>
-            처음으로
+            {restarting ? '초기화 중' : '처음으로'}
           </span>
         </motion.button>
       </div>
