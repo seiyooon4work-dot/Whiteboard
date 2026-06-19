@@ -63,20 +63,34 @@ export function Section4Experiment() {
         </motion.h2>
 
         <motion.p
-          className="text-sm max-w-lg mb-10"
+          className="text-sm max-w-lg mb-3"
           style={{ color: 'var(--ivory-dim)' }}
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.2 }}
         >
-          연구팀이 6가지 재질에 직접 마커로 글씨를 쓴 뒤, 여러 자리에서 얼마나 잘 보이는지
-          평가하고 표면 구조, 객관적 가시성, 지움성을 함께 비교했습니다.
+          연구팀이 6가지 재질에 직접 마커로 글씨를 쓴 뒤, 실측 가시성·객관적 가시성·지움성·표면 구조를 함께 비교했습니다.
+        </motion.p>
+
+        <motion.p
+          className="mb-10 max-w-2xl rounded-lg px-3 py-2 text-xs leading-relaxed"
+          style={{
+            color: 'var(--ivory-dim)',
+            background: 'rgba(79,216,200,0.055)',
+            border: '1px solid rgba(79,216,200,0.16)',
+          }}
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.28 }}
+        >
+          이 순위는 글씨가 잘 보인 정도 기준이며, 최종 추천은 지움성까지 포함해 계산합니다.
         </motion.p>
 
         {/* 재질 카드 그리드 */}
         <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 gap-4">
           {MATERIALS.map((m, i) => {
             const metrics = getExperimentMetrics(m)
+            const isTopCandidate = m.rank <= 3
 
             return (
               <motion.div
@@ -87,16 +101,22 @@ export function Section4Experiment() {
                 whileHover={{ y: -6, scale: 1.02 }}
                 className="glass-card group flex cursor-default flex-col gap-3 p-3 sm:p-5"
                 style={{
-                  borderColor: `${m.accentColor}30`,
-                  transition: 'border-color 0.3s, box-shadow 0.3s',
+                  borderColor: isTopCandidate ? `${m.accentColor}48` : 'rgba(46,63,102,0.36)',
+                  background: isTopCandidate
+                    ? `linear-gradient(145deg, ${m.accentColor}10, rgba(13,17,32,0.68))`
+                    : 'rgba(13,17,32,0.42)',
+                  opacity: isTopCandidate ? 1 : 0.86,
+                  transition: 'border-color 0.3s, box-shadow 0.3s, opacity 0.3s',
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.borderColor = m.accentColor + '60'
                   ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${m.accentColor}18`
+                  ;(e.currentTarget as HTMLElement).style.opacity = '1'
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = m.accentColor + '30'
+                  ;(e.currentTarget as HTMLElement).style.borderColor = isTopCandidate ? m.accentColor + '48' : 'rgba(46,63,102,0.36)'
                   ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                  ;(e.currentTarget as HTMLElement).style.opacity = isTopCandidate ? '1' : '0.86'
                 }}
               >
               {/* 순위 배지 + 이름 */}
@@ -105,7 +125,7 @@ export function Section4Experiment() {
                   className="no-split rounded px-2 py-0.5 font-mono text-xs font-bold"
                   style={{ background: m.accentColor + '18', color: m.accentColor }}
                 >
-                  #{m.rank}
+                  가시성 {m.rank}위
                 </span>
                 <DataProvenanceBadge type={metrics.estimated ? 'estimated' : 'measured'} compact />
               </div>
@@ -114,16 +134,19 @@ export function Section4Experiment() {
                 <h3 className="font-subtitle font-bold text-sm mb-0.5" style={{ color: 'var(--ivory)' }}>
                   {m.name}
                 </h3>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+                <p
+                  className={isTopCandidate ? 'text-xs leading-relaxed' : 'text-[11px] leading-relaxed'}
+                  style={{ color: isTopCandidate ? 'var(--ivory-dim)' : 'rgba(160,152,136,0.78)' }}
+                >
                   {m.description}
                 </p>
               </div>
 
-              {/* 객관적 가시성 바 */}
+              {/* 실측 가시성 바 */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-subtitle" style={{ color: 'var(--ivory-dim)' }}>
-                    객관적 가시성
+                    실측 가시성
                   </span>
                   <span className="font-mono text-sm font-bold" style={{ color: m.accentColor }}>
                     {metrics.subjectiveVisibility.toFixed(2)}
@@ -147,9 +170,9 @@ export function Section4Experiment() {
                 style={{ background: 'rgba(46,63,102,0.45)' }}
               >
                 {[
-                  { label: '객관적 가시성', value: metrics.objectiveVisibility },
-                  { label: '지움성', value: metrics.erasability },
-                  { label: '표면 구조', value: metrics.surfaceStructure },
+                  { label: '객관', value: metrics.objectiveVisibility },
+                  { label: '지움', value: metrics.erasability },
+                  { label: '구조', value: metrics.surfaceStructure },
                 ].map((metric) => (
                   <div
                     key={metric.label}
@@ -168,7 +191,7 @@ export function Section4Experiment() {
 
               {/* 마찰계수 표시 */}
               <div className="flex items-center justify-between">
-                <span className="no-split shrink-0 text-[10px] sm:text-xs" style={{ color: 'var(--ivory-dim)' }}>마찰계수 μ · 참고</span>
+                <span className="no-split shrink-0 text-[10px] sm:text-xs" style={{ color: 'var(--ivory-dim)' }}>마찰 μ</span>
                 <div className="flex min-w-0 shrink-0 items-center gap-1">
                   {/* 마찰 시각화 */}
                   {Array.from({ length: 5 }, (_, j) => (
@@ -207,10 +230,8 @@ export function Section4Experiment() {
             ⚖ 트레이드오프 딜레마
           </p>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-            <span style={{ color: 'var(--aqua)' }}>잘 보이는 표면</span>은 보통 거칠어서{' '}
-            <span style={{ color: 'var(--amber)' }}>잘 지워지지 않고</span>,<br />
-            <span style={{ color: 'var(--aqua)' }}>잘 지워지는 표면</span>은 매끄러워서{' '}
-            <span style={{ color: 'var(--amber)' }}>번쩍임이 심합니다</span>.
+            <span style={{ color: 'var(--aqua)' }}>잘 보이는 표면</span>은 거칠어 지움성이 낮고,{' '}
+            <span style={{ color: 'var(--aqua)' }}>잘 지워지는 표면</span>은 매끄러워 번쩍임이 커집니다.
           </p>
           <p className="text-sm mt-3 font-subtitle" style={{ color: 'var(--ivory)' }}>
             → 그래서 <strong>최적의 균형점</strong>이 필요합니다. 직접 찾아보세요 ↓

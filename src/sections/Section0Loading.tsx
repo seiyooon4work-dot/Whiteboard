@@ -2,6 +2,7 @@
 // 흩어진 빛 입자가 중심으로 모여 사이트가 열린다 (2초 이내)
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface Section0LoadingProps {
   onComplete: () => void
@@ -9,6 +10,7 @@ interface Section0LoadingProps {
 
 export function Section0Loading({ onComplete }: Section0LoadingProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const reduced = useReducedMotion()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -78,13 +80,13 @@ export function Section0Loading({ onComplete }: Section0LoadingProps) {
 
     rafId = requestAnimationFrame(draw)
 
-    // 1.8초 후 onComplete 호출
-    const timer = setTimeout(onComplete, 1800)
+    // 진입 장벽이 되지 않도록 짧게 보여주고, 모션 축소 사용자는 거의 바로 진입한다.
+    const timer = setTimeout(onComplete, reduced ? 120 : 1100)
     return () => {
       cancelAnimationFrame(rafId)
       clearTimeout(timer)
     }
-  }, [onComplete])
+  }, [onComplete, reduced])
 
   return (
     <motion.div
@@ -107,7 +109,7 @@ export function Section0Loading({ onComplete }: Section0LoadingProps) {
         </p>
         <p className="font-mono text-xs tracking-widest"
            style={{ color: 'var(--ivory-dim)' }}>
-          Loading Simulation...
+          시뮬레이션 준비 중
         </p>
       </motion.div>
     </motion.div>

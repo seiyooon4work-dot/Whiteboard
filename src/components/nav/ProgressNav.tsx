@@ -66,16 +66,50 @@ export function ProgressNav() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const activeIndex = Math.max(0, SECTIONS.findIndex(section => section.id === active))
+  const activeSection = SECTIONS[activeIndex] ?? SECTIONS[0]
+  const progress = (activeIndex / Math.max(1, SECTIONS.length - 1)) * 100
+  const sectionNumber = String(activeIndex + 1).padStart(2, '0')
+
   return (
     <AnimatePresence>
       {visible && (
-        <div className="progress-nav fixed top-1/2 z-50 -translate-y-1/2 sm:right-5">
+        <div key="progress-nav-wrap">
+          <motion.div
+            key="mobile-progress"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="progress-nav-mobile fixed right-3 top-3 z-50 sm:hidden"
+            aria-label={`현재 섹션: ${activeSection.label}`}
+          >
+            <button
+              type="button"
+              onClick={() => scrollTo(active)}
+              className="progress-nav-mobile__pill"
+              aria-label={`${activeSection.label} 섹션으로 이동`}
+            >
+              <span className="font-mono">{sectionNumber}</span>
+              <span aria-hidden="true">/</span>
+              <span>{activeSection.label}</span>
+            </button>
+            <div className="progress-nav-mobile__track" aria-hidden="true">
+              <motion.div
+                className="progress-nav-mobile__fill"
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </div>
+          </motion.div>
+
+          <div className="progress-nav fixed top-1/2 z-50 hidden -translate-y-1/2 sm:block sm:right-5">
           <motion.nav
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-end gap-1 sm:gap-3"
+            className="pointer-events-none flex flex-col items-end gap-1 sm:gap-3"
             aria-label="페이지 진행 표시"
           >
             {SECTIONS.map(s => {
@@ -92,13 +126,13 @@ export function ProgressNav() {
                 >
                   {/* 라벨 (hover 시 나타남) */}
                   <AnimatePresence>
-                    {hovered === s.id && (
+                    {(hovered === s.id || isActive) && (
                       <motion.span
                         initial={{ opacity: 0, x: 8 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 6 }}
                         transition={{ duration: 0.2 }}
-                        className="hidden text-xs font-subtitle font-semibold tracking-wider uppercase sm:block"
+                        className="text-xs font-subtitle font-semibold tracking-wider uppercase"
                         style={{ color: isActive ? '#4FD8C8' : '#A09888' }}
                       >
                         {s.label}
@@ -120,6 +154,7 @@ export function ProgressNav() {
               )
             })}
           </motion.nav>
+          </div>
         </div>
       )}
     </AnimatePresence>

@@ -16,11 +16,14 @@ export function PresetButtons({ selectedMaterial, onSelect }: PresetButtonsProps
   return (
     <div className="flex flex-col gap-3">
       <p className="section-label">재질 프리셋</p>
+      <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+        먼저 후보 재질을 선택하면 측정값이 설계 패널에 적용됩니다.
+      </p>
       <div className="grid grid-cols-2 gap-2 xl:grid-cols-1">
         {REGRESSION_MATERIALS.map((m, i) => {
           const isActive = selectedMaterial.id === m.id
           const metrics = [
-            { label: '정밀', value: m.surfaceStructureIndex.toFixed(2), color: 'var(--aqua)' },
+            { label: '구조', value: m.surfaceStructureIndex.toFixed(2), color: 'var(--aqua)' },
             { label: '주관', value: m.subjectiveVisibility.toFixed(2), color: 'var(--aqua-bright)' },
             { label: '객관', value: m.objectiveVisibility.toFixed(2), color: 'var(--aqua)' },
             { label: '지움', value: m.erasability.toFixed(2), color: 'var(--amber)' },

@@ -47,10 +47,10 @@ export function Section3Principle() {
 
   // height = 고정 구간 길이. 충분히 길게 잡아 표면 변화가 끝나기 전 화면이 먼저 풀리지 않게 한다.
   return (
-    <div ref={containerRef} className="h-[260vh] sm:h-[250vh] md:h-[240vh]">
+    <div ref={containerRef} className="h-[220vh] sm:h-[250vh] md:h-[240vh]">
       <section
         id="principle"
-        className="sticky top-0 relative flex h-[100svh] min-h-0 flex-col items-center justify-center overflow-hidden px-4 py-8 sm:py-10 md:px-8 md:py-0 lg:px-6"
+        className="sticky top-0 relative flex h-[100svh] min-h-0 flex-col items-stretch justify-start overflow-hidden px-4 py-6 sm:items-center sm:justify-center sm:py-10 md:px-8 md:py-0 lg:px-6"
       >
         {/* 배경 그라디언트 */}
         <div className="absolute inset-0 pointer-events-none"
@@ -62,31 +62,30 @@ export function Section3Principle() {
              }} />
 
         <div className="max-w-5xl w-full mx-auto">
-          <motion.p className="section-label mb-3">03 — 물리 원리</motion.p>
+          <motion.p className="section-label mb-2 sm:mb-3">03 — 물리 원리</motion.p>
           <h2
             className="font-display font-bold mb-2"
-            style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)', color: 'var(--ivory)' }}
+            style={{ fontSize: 'clamp(1.65rem, 7vw, 3.5rem)', color: 'var(--ivory)' }}
           >
             왜 자리마다 다르게 보일까?
           </h2>
-          <p className="mb-5 max-w-md text-sm" style={{ color: 'var(--ivory-dim)' }}>
-            화면을 아래로 스크롤하면 표면이 매끄러움 → 거침으로 바뀝니다.<br className="hidden sm:block" />
-            빛의 반사 패턴이 어떻게 달라지는지 보세요.
+          <p className="mb-3 max-w-md text-xs leading-relaxed sm:mb-5 sm:text-sm" style={{ color: 'var(--ivory-dim)' }}>
+            스크롤하면 표면이 매끄러움에서 거침으로 바뀌고, 반사 패턴도 함께 달라집니다.
           </p>
 
           {/* 인터랙티브 반사 다이어그램 */}
-          <div className="grid items-center gap-5 lg:grid-cols-2 lg:gap-8">
+          <div className="grid items-center gap-3 sm:gap-5 lg:grid-cols-2 lg:gap-8">
             <ReflectionDiagram progress={progress} surfaceColor={surfaceColor} />
 
             {/* 설명 텍스트 */}
-            <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="flex flex-col gap-3 sm:gap-6">
               {/* 현재 상태 */}
               <motion.div
                 key={label}
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="rounded-xl p-4 sm:p-5"
+                className="rounded-xl p-3 sm:p-5"
                 style={{
                   background: progress > 0.5 ? 'rgba(79,216,200,0.06)' : 'rgba(255,138,61,0.06)',
                   border: `1px solid ${progress > 0.5 ? 'rgba(79,216,200,0.25)' : 'rgba(255,138,61,0.25)'}`,
@@ -96,21 +95,21 @@ export function Section3Principle() {
                    style={{ color: progress > 0.5 ? 'var(--aqua)' : 'var(--amber)' }}>
                   {label}
                 </p>
-                <p className="text-sm" style={{ color: 'var(--ivory-dim)' }}>
+                <p className="text-xs leading-relaxed sm:text-sm" style={{ color: 'var(--ivory-dim)' }}>
                   {progress < 0.35
-                    ? '빛이 거울처럼 한 방향으로 강하게 튕깁니다. 특정 자리(특히 1·7·8번)에서 심한 번쩍임이 발생합니다.'
+                    ? '빛이 한 방향으로 강하게 튕겨 특정 자리에서 번쩍임이 생깁니다.'
                     : progress < 0.65
-                    ? '정반사와 난반사가 섞입니다. 번쩍임이 줄어들지만 지움성도 약간 감소합니다.'
-                    : '빛이 여러 방향으로 고르게 흩어집니다. 모든 자리에서 비슷하게 잘 보이지만, 마카가 잘 안 지워질 수 있습니다.'}
+                    ? '정반사와 난반사가 섞여 번쩍임이 줄고 지움성도 조금 낮아집니다.'
+                    : '빛이 고르게 흩어져 자리별 차이는 줄지만, 마카가 덜 지워질 수 있습니다.'}
                 </p>
               </motion.div>
 
               {/* 용어 설명 */}
               <div className="flex flex-col gap-3">
                 {[
-                  { term: '정반사', def: '거울처럼 빛이 한 방향으로 튕기는 현상입니다. 매끄러운 표면에서 강하게 나타납니다.' },
-                  { term: '난반사', def: '빛이 여러 방향으로 흩어지는 현상입니다. 거친 표면에서 나타나며 눈부심이 적습니다.' },
-                  { term: '마찰력', def: '표면의 거칠기를 나타내는 값입니다. 클수록 표면이 거칩니다.' },
+                  { term: '정반사', def: '빛이 한 방향으로 튕깁니다. 매끄러운 표면에서 강합니다.' },
+                  { term: '난반사', def: '빛이 여러 방향으로 흩어집니다. 눈부심이 줄어듭니다.' },
+                  { term: '마찰력', def: '표면 거칠기입니다. 클수록 잘 보이지만 덜 지워집니다.' },
                 ].map(item => (
                   <div key={item.term} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
                     <Tooltip term={item.term} definition={item.def}>
@@ -127,7 +126,7 @@ export function Section3Principle() {
               </div>
 
               {/* 비유 */}
-              <p className="text-xs italic p-3 rounded-lg"
+              <p className="hidden text-xs italic p-3 rounded-lg min-[390px]:block"
                  style={{ background: 'rgba(245,240,232,0.04)', color: 'var(--ivory-dim)', borderLeft: '3px solid rgba(139,111,232,0.4)' }}>
                 "매끄러운 칠판은 <strong style={{ color: 'var(--amber)' }}>거울</strong>처럼,
                 거친 칠판은 <strong style={{ color: 'var(--aqua)' }}>종이</strong>처럼 빛을 다룹니다."
@@ -136,17 +135,21 @@ export function Section3Principle() {
           </div>
 
           {/* 읽기 전용 스크롤 진행 바 */}
-          <div className="mt-5 flex items-center gap-2 sm:gap-3">
+          <div className="pointer-events-none mt-3 flex items-center gap-2 sm:mt-5 sm:gap-3">
+            <span className="hidden text-[10px] font-subtitle font-bold tracking-widest sm:inline"
+                  style={{ color: 'var(--ivory-dim)' }}>
+              표면 변화
+            </span>
             <span className="text-[10px] font-mono sm:text-xs" style={{ color: 'var(--amber)' }}>매끄러움</span>
             <div
-              className="relative flex-1 py-3"
+              className="relative flex-1 py-2"
               role="progressbar"
               aria-label="스크롤에 따른 표면 거칠기"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(progress * 100)}
             >
-              <div className="h-1 rounded-full overflow-hidden"
+              <div className="h-[3px] rounded-full overflow-hidden"
                    style={{ background: 'rgba(46,63,102,0.5)' }}>
                 <motion.div
                   className="h-full rounded-full"
@@ -211,7 +214,7 @@ function ReflectionDiagram({
 
   return (
     <div className="relative">
-      <svg viewBox="0 0 400 280" className="mx-auto w-full max-w-md overflow-hidden">
+      <svg viewBox="0 0 400 280" className="mx-auto w-full max-w-[21rem] overflow-visible sm:max-w-md">
         <defs>
           <linearGradient id="principleSurfaceFill" x1="40" y1="145" x2="360" y2="250" gradientUnits="userSpaceOnUse">
             <stop stopColor={progress < 0.5 ? 'rgba(245,240,232,0.9)' : 'rgba(125,231,219,0.92)'} />
@@ -315,7 +318,7 @@ function ReflectionDiagram({
         </text>
 
         {/* 하단 안내 */}
-        <text x="200" y="270" textAnchor="middle"
+        <text className="hidden sm:block" x="200" y="270" textAnchor="middle"
               fontSize="9" fill="rgba(160,152,136,0.5)"
               fontFamily="Pretendard, sans-serif">
           아래로 스크롤해 표면 변화를 확인하세요

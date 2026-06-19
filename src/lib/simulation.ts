@@ -408,16 +408,16 @@ export function generateInterpretText(
 ): string {
   const q = Math.round(qualityScore)
   const weakest = [
-    { label: '객관적 가시성', value: inputs.objectiveVisibility },
+    { label: '객관 가시성', value: inputs.objectiveVisibility },
     { label: '지움성', value: inputs.erasability },
-    { label: '마찰 적정성', value: inputs.frictionFit },
-    { label: '정밀비교값', value: inputs.surfaceStructure },
+    { label: '필기감', value: inputs.frictionFit },
+    { label: '표면 구조', value: inputs.surfaceStructure },
   ].sort((a, b) => a.value - b.value)[0]
 
   if (q >= 80) return `가시성과 지움성이 함께 높고 표면 구조도 극단적이지 않습니다. 현재 상태는 실사용 적합도가 높습니다. 최종 적합도 ${q}점.`
   if (q >= 65) return `전반적으로 양호하지만 ${weakest.label} 점수가 가장 낮아 최종 적합도를 제한하고 있습니다. 이 항목을 보완하면 점수가 가장 효율적으로 올라갑니다. 최종 적합도 ${q}점.`
   if (q >= 50) return `${weakest.label} 항목이 약점입니다. 새 공식은 지움성을 크게 보면서도 좋은 균형 조건에는 점수를 더 후하게 줍니다. 최종 적합도 ${q}점.`
-  return `현재는 ${weakest.label} 점수가 낮아 실사용 균형이 부족합니다. 가시성, 지움성, 마찰 적정성, 정밀비교값을 함께 끌어올려야 합니다. 최종 적합도 ${q}점.`
+  return `현재는 ${weakest.label} 점수가 낮아 실사용 균형이 부족합니다. 가시성, 지움성, 필기감, 표면 구조를 함께 끌어올려야 합니다. 최종 적합도 ${q}점.`
 }
 
 function clampScore(v: number): number {

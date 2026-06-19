@@ -74,15 +74,14 @@ export function Section1Hero() {
         />
 
         <motion.p
-          className="mt-7 max-w-xl text-center text-base leading-relaxed md:text-lg"
+          className="mt-7 max-w-2xl text-center text-base leading-relaxed md:text-lg"
           style={{ color: 'var(--ivory-dim)' }}
           initial={reduced ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.25, duration: 0.75 }}
         >
-          왜 어떤 자리에서는 칠판 글씨가 잘 안 보일까?
-          <br className="hidden sm:block" />
-          빛 반사와 표면 거칠기의 균형을 시뮬레이션으로 확인합니다.
+          <span className="block">왜 어떤 자리에서는 칠판 글씨가 잘 안 보일까요?</span>
+          <span className="mt-1 block sm:mt-0">빛 반사와 표면 거칠기의 균형을 시뮬레이션으로 확인합니다.</span>
         </motion.p>
 
         <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
@@ -92,9 +91,9 @@ export function Section1Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.65, duration: 0.7 }}
           >
-            <p className="text-xs font-subtitle tracking-[0.2em] uppercase"
-               style={{ color: 'var(--ivory-dim)' }}>
-              Scroll to explore
+            <p className="text-xs font-subtitle font-semibold tracking-[0.14em]"
+               style={{ color: 'var(--ivory)' }}>
+              아래로 내려 연구 흐름 보기
             </p>
             <motion.div
               animate={reduced ? undefined : { y: [0, 6, 0] }}

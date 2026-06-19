@@ -74,6 +74,32 @@ function ScoreBar({ label, value, color = 'var(--aqua)' }: { label: string; valu
   )
 }
 
+function WorkflowStrip() {
+  const steps = ['재질 선택', '핵심값 조절', '최적화 실행']
+
+  return (
+    <div
+      className="mb-6 flex flex-wrap items-center gap-2 rounded-xl px-3 py-2 text-xs sm:gap-3 sm:px-4"
+      style={{
+        background: 'rgba(13,17,32,0.36)',
+        border: '1px solid rgba(79,216,200,0.18)',
+        color: 'var(--ivory-dim)',
+      }}
+      aria-label="시뮬레이션 사용 흐름"
+    >
+      <span className="font-subtitle font-bold tracking-widest" style={{ color: 'var(--aqua)' }}>
+        사용 흐름
+      </span>
+      {steps.map((step, index) => (
+        <span key={step} className="inline-flex items-center gap-2">
+          {index > 0 && <span aria-hidden="true" style={{ color: 'rgba(160,152,136,0.45)' }}>→</span>}
+          <span>{step}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function Section5Lab() {
   const [ref, inView] = useInView<HTMLElement>({ threshold: 0.04 })
   const [showScoreHelp, setShowScoreHelp] = useState(false)
@@ -143,17 +169,17 @@ export function Section5Lab() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
-          <p className="section-label mb-3">05 — 통합 연구 시뮬레이션 실험실</p>
+          <p className="section-label mb-3">05 — 통합 연구 시뮬레이션</p>
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(480px,1.15fr)] lg:items-end">
             <div>
               <h2
                 className="font-display font-bold text-ivory"
                 style={{ fontSize: 'clamp(2rem, 3.7vw, 3.35rem)' }}
               >
-                통합 표면 시뮬레이션 실험실
+                최적 표면 찾기
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-                최종 적합도를 먼저 확인하고, 같은 표면 조건을 2D 단면 반사 계산으로 검증합니다.
+                최종 적합도와 반사 조건을 함께 확인합니다.
               </p>
             </div>
 
@@ -185,10 +211,10 @@ export function Section5Lab() {
                 <QualityGauge score={result.qualityScore} size={118} />
               </div>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <SummaryMetric label="가상 표면 조건" value={virtualSurface} />
-                <SummaryMetric label="가까운 실제 재질" value={nearestName} tone="ivory" />
-                <SummaryMetric label="현재 정반사" value={pct(reflectionResult.metrics.specularRatio)} tone="amber" />
-                <SummaryMetric label="현재 눈부심" value={pct(reflectionResult.metrics.glareRisk)} tone={reflectionResult.metrics.glareRisk > 0.55 ? 'amber' : 'aqua'} />
+                <SummaryMetric label="설계 조건" value={virtualSurface} />
+                <SummaryMetric label="가까운 재질" value={nearestName} tone="ivory" />
+                <SummaryMetric label="정반사" value={pct(reflectionResult.metrics.specularRatio)} tone="amber" />
+                <SummaryMetric label="눈부심" value={pct(reflectionResult.metrics.glareRisk)} tone={reflectionResult.metrics.glareRisk > 0.55 ? 'amber' : 'aqua'} />
               </div>
             </div>
           </div>
@@ -208,8 +234,8 @@ export function Section5Lab() {
               >
                 <div className="mb-3 flex items-start justify-between gap-4">
                   <div>
-                    <p className="section-label mb-1">점수 계산 기준</p>
-                    <h3 className="font-display text-base font-bold text-ivory">통합 점수는 실사용 균형 점수입니다</h3>
+                    <p className="section-label mb-1">계산 기준</p>
+                    <h3 className="font-display text-base font-bold text-ivory">최종 적합도는 균형 점수입니다</h3>
                   </div>
                   <button
                     type="button"
@@ -223,12 +249,12 @@ export function Section5Lab() {
                 </div>
                 <div className="grid gap-3 text-xs leading-relaxed md:grid-cols-2" style={{ color: 'var(--ivory-dim)' }}>
                   <p>
-                    최종 적합도는 4개 핵심 항목을 단순히 더하지 않고, 각 항목을 곱해서 계산합니다.
-                    가장 약한 항목을 한 번 더 반영해서 균형이 무너지면 점수가 분명하게 내려갑니다.
+                    최종 적합도는 4개 핵심 항목을 곱해서 계산합니다.
+                    약한 항목이 있으면 전체 점수가 함께 내려갑니다.
                   </p>
                   <p>
-                    입사각은 현재 조명 조건을 보여주는 값이라 2D/히스토그램에는 반영되지만,
-                    재질 자체의 통합 점수는 고정 평가 입사각 기준으로 계산합니다.
+                    입사각은 반사 화면에 반영됩니다.
+                    재질 점수는 고정 평가 조건을 기준으로 봅니다.
                   </p>
                 </div>
                 <div
@@ -252,7 +278,7 @@ export function Section5Lab() {
                   {[
                     ['V', '가시성', '0.40'],
                     ['E', '지움성', '0.30'],
-                    ['F', '마찰/필기', '0.20'],
+                    ['F', '필기감', '0.20'],
                     ['S', '표면 구조', '0.10'],
                   ].map(([symbol, label, weight]) => (
                     <div
@@ -270,6 +296,8 @@ export function Section5Lab() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        <WorkflowStrip />
 
         <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[270px_minmax(0,1fr)] xl:grid-cols-[270px_minmax(0,1fr)_300px] 2xl:grid-cols-[300px_minmax(560px,1fr)_330px]">
           <motion.div
@@ -298,11 +326,11 @@ export function Section5Lab() {
             >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="section-label mb-1">중심 검증 화면</p>
-                <h3 className="font-display text-xl font-bold text-ivory sm:text-2xl">2D 단면 기반 반사 계산</h3>
+                  <p className="section-label mb-1">반사 검증</p>
+                <h3 className="font-display text-xl font-bold text-ivory sm:text-2xl">2D 단면 반사</h3>
               </div>
               <div className="flex flex-wrap gap-2 text-xs font-mono" style={{ color: 'var(--ivory-dim)' }}>
-                <span>정밀 {inputs.surfaceStructureIndex.toFixed(2)}</span>
+                <span>구조 {inputs.surfaceStructureIndex.toFixed(2)}</span>
                 <span>/</span>
                 <span>거칠기 {surfaceParams.roughness.toFixed(2)}</span>
                 <span>/</span>
@@ -338,8 +366,8 @@ export function Section5Lab() {
                 >
                   <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="section-label mb-1">통합 최적화 결과</p>
-                      <h4 className="font-display text-lg font-bold text-ivory">가상 최적 표면 조건</h4>
+                      <p className="section-label mb-1">최적화 결과</p>
+                      <h4 className="font-display text-lg font-bold text-ivory">최적 표면 조건</h4>
                     </div>
                     <span className="font-mono text-2xl font-bold" style={{ color: 'var(--aqua-bright)' }}>
                       {unifiedOptimum.unifiedQualityScore.toFixed(1)}
@@ -378,15 +406,15 @@ export function Section5Lab() {
               transition={{ delay: 0.18, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
             >
             <div className="glass-card p-5">
-              <p className="section-label mb-1">통합 점수 구성</p>
+              <p className="section-label mb-1">점수 구성</p>
               <h3 className="font-display text-lg font-bold text-ivory mb-4">점수 해석</h3>
               <div className="flex flex-col gap-3">
-                <ScoreBar label="객관적 가시성" value={inputs.objectiveVisibility} />
+                <ScoreBar label="객관 가시성" value={inputs.objectiveVisibility} />
                 <ScoreBar label="지움성" value={result.weightedErasabilityScore} color="var(--amber-bright)" />
-                <ScoreBar label="마찰/필기 적정성" value={inputs.frictionFit} color="var(--violet, #8B6FE8)" />
-                <ScoreBar label="표면 구조 점수" value={structureScore} color="var(--aqua-bright)" />
+                <ScoreBar label="필기감" value={inputs.frictionFit} color="var(--violet, #8B6FE8)" />
+                <ScoreBar label="구조 점수" value={structureScore} color="var(--aqua-bright)" />
                 <p className="text-[11px] leading-relaxed" style={{ color: 'var(--ivory-ghost)' }}>
-                  표면 구조 점수는 반사 안정성과 입력 일관성 중 더 낮은 값을 사용합니다.
+                  구조 점수는 반사 안정성과 입력 일관성 중 낮은 값을 봅니다.
                 </p>
               </div>
             </div>
@@ -406,16 +434,16 @@ export function Section5Lab() {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="section-label mb-1">현재 결과</p>
-                  <h3 className="font-display text-base font-bold text-ivory">핵심 점수 요약</h3>
+                  <h3 className="font-display text-base font-bold text-ivory">핵심 결과</h3>
                 </div>
                 <span className="font-mono text-xl font-bold" style={{ color: 'var(--aqua-bright)' }}>
                   {result.qualityScore.toFixed(0)}점
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <SummaryMetric label="객관적 가시성" value={inputs.objectiveVisibility.toFixed(1)} />
+                <SummaryMetric label="객관 가시성" value={inputs.objectiveVisibility.toFixed(1)} />
                 <SummaryMetric label="지움성" value={result.weightedErasabilityScore.toFixed(1)} tone="amber" />
-                <SummaryMetric label="마찰/필기" value={inputs.frictionFit.toFixed(1)} tone="ivory" />
+                <SummaryMetric label="필기감" value={inputs.frictionFit.toFixed(1)} tone="ivory" />
                 <SummaryMetric label="표면 구조" value={structureScore.toFixed(1)} />
               </div>
             </div>
@@ -425,7 +453,7 @@ export function Section5Lab() {
               open={mobileAnalysisOpen}
               onToggle={(event) => setMobileAnalysisOpen(event.currentTarget.open)}
             >
-              <summary>2D 반사 분석 보기</summary>
+              <summary>2D 반사 보기</summary>
               <div className="mt-3 flex flex-col gap-3">
                 <CrossSectionView surface={reflectionResult.surface} samples={reflectionResult.crossSectionSamples} emphasis />
                 {mobileAnalysisOpen && (
@@ -441,7 +469,7 @@ export function Section5Lab() {
               open={mobileDetailsOpen}
               onToggle={(event) => setMobileDetailsOpen(event.currentTarget.open)}
             >
-              <summary>세부 지표와 해석 보기</summary>
+              <summary>지표 해석 보기</summary>
               {mobileDetailsOpen && (
                 <div className="mt-3 flex flex-col gap-3">
                   <MetricsPanel metrics={reflectionResult.metrics} />
@@ -453,11 +481,15 @@ export function Section5Lab() {
         </div>
 
         <motion.div
-          className="mt-5 grid grid-cols-1 items-start gap-5 xl:mt-6 xl:grid-cols-[minmax(0,1fr)_440px] xl:gap-6"
+          className="mt-5 grid grid-cols-1 items-start gap-5 xl:mt-6 xl:grid-cols-[440px_minmax(0,1fr)] xl:gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
+          <div className="flex min-w-0 flex-col gap-5 self-start">
+            <PresetButtons selectedMaterial={selectedMaterial} onSelect={selectMaterial} />
+          </div>
+
           <div
             className="flex min-w-0 flex-col gap-5 self-start"
           >
@@ -467,16 +499,16 @@ export function Section5Lab() {
             >
               <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p className="section-label mb-1">3D 보조 시각화</p>
-                  <h3 className="font-display text-lg font-bold text-ivory">표면 형태 참고</h3>
+                  <p className="section-label mb-1">3D 참고</p>
+                  <h3 className="font-display text-lg font-bold text-ivory">표면 형태</h3>
                 </div>
                 <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
-                  정량 판단은 2D 기준
+                  판단 기준은 2D
                 </span>
               </div>
               <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-                3D 화면은 표면 형태와 광선 방향을 직관적으로 보여주는 보조 시각화입니다.
-                정량 판단은 2D 단면, 반사각 히스토그램, 통합 점수를 기준으로 봅니다.
+                3D 화면은 표면 형태와 광선 방향을 보여줍니다.
+                판단은 2D 단면, 반사각, 최종 적합도를 기준으로 봅니다.
               </p>
               <div className="mt-4">
                 {inView && !isMobile ? (
@@ -520,9 +552,6 @@ export function Section5Lab() {
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-col gap-5 self-start">
-            <PresetButtons selectedMaterial={selectedMaterial} onSelect={selectMaterial} />
-          </div>
         </motion.div>
 
         <motion.div
@@ -535,10 +564,9 @@ export function Section5Lab() {
             className="rounded-2xl p-4"
             style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}
           >
-            <p className="section-label mb-2">세부 분석 안내</p>
+            <p className="section-label mb-2">보조 자료</p>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-              중심 검증은 위의 2D 단면과 반사각 히스토그램입니다. 아래 자료들은 실제 측정값,
-              재질 비교, 모델 설명을 확인하기 위한 보조 패널입니다.
+              중심 검증은 2D 단면과 반사각입니다. 아래 자료는 측정값과 모델 확인용입니다.
             </p>
           </div>
           <details
@@ -546,7 +574,7 @@ export function Section5Lab() {
             style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}
           >
             <summary className="cursor-pointer">
-              <span className="section-label">실험값 보정 데이터</span>
+              <span className="section-label">측정 데이터</span>
               <span className="ml-3 text-xs" style={{ color: 'var(--ivory-dim)' }}>
                 표 펼치기
               </span>
@@ -565,7 +593,7 @@ export function Section5Lab() {
         >
           <details className="glass-card p-5">
             <summary className="cursor-pointer">
-              <span className="section-label">교실 좌석 보조 화면</span>
+              <span className="section-label">좌석 시뮬레이션</span>
               <span className="ml-3 text-xs" style={{ color: 'var(--ivory-dim)' }}>
                 펼치기
               </span>
@@ -579,7 +607,7 @@ export function Section5Lab() {
             style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}
           >
             <summary className="cursor-pointer">
-              <span className="section-label">계산 모델 설명</span>
+              <span className="section-label">모델 설명</span>
               <span className="ml-3 text-xs" style={{ color: 'var(--ivory-dim)' }}>
                 펼치기
               </span>

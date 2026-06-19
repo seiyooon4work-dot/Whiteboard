@@ -51,16 +51,16 @@ export function InsightText({ result }: InsightTextProps) {
           {interpretText}
         </p>
 
-        {/* 세부 수치 */}
+        {/* 핵심 수치 */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(72px,1fr))] gap-2 pt-1 xl:gap-3">
           {[
             {
-              label: '주관적',
+              label: '실측',
               value: `${inputs.visibility.toFixed(2)}점`,
               good:  inputs.visibility >= 6,
             },
             {
-              label: '객관적',
+              label: '객관',
               value: `${inputs.objectiveVisibility.toFixed(2)}점`,
               good:  inputs.objectiveVisibility >= 70,
             },
@@ -85,7 +85,7 @@ export function InsightText({ result }: InsightTextProps) {
         </div>
 
         <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-ghost)' }}>
-          현재 입력값과 표면 구조 기반 지움성 보정을 함께 반영한 결과입니다.
+          현재 입력값과 지움성 보정을 반영한 결과입니다.
         </p>
 
         {/* 지움성 경고 */}

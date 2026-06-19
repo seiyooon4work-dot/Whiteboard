@@ -110,23 +110,64 @@ body::after {
 @media (min-width: 768px) { .section-pad { padding: 4rem 2.5rem; } }
 @media (min-width: 1280px) { .section-pad { padding: 5rem 4rem; } }
 
-/* Mobile section navigation: small visual dots with comfortable touch targets. */
+/* Section progress navigation. */
 .progress-nav {
-  right: max(0px, env(safe-area-inset-right));
+  right: max(1.25rem, env(safe-area-inset-right));
   touch-action: pan-y;
+  pointer-events: none;
+  transform: translate3d(0, -50%, 0);
+}
+
+.progress-nav-mobile {
+  right: calc(0.75rem + max(0px, env(safe-area-inset-right)));
+  pointer-events: none;
+}
+
+.progress-nav-mobile__pill {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(79, 216, 200, 0.26);
+  border-radius: 999px;
+  background: rgba(8, 10, 18, 0.72);
+  color: var(--ivory);
+  padding: 0 0.75rem;
+  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  pointer-events: auto;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.progress-nav-mobile__track {
+  height: 2px;
+  margin: 0.35rem 0.55rem 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(46, 63, 102, 0.6);
+}
+
+.progress-nav-mobile__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--amber), var(--aqua));
 }
 
 .progress-nav__button {
-  width: 2.75rem;
+  width: 3rem;
   height: 2.75rem;
-  padding-right: 0.75rem;
+  padding-right: 0.875rem;
   touch-action: manipulation;
+  pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
 }
 
 .progress-nav__dot {
-  width: 0.4375rem;
-  height: 0.4375rem;
+  width: 0.5rem;
+  height: 0.5rem;
 }
 
 .mobile-analysis-panel,
@@ -181,7 +222,7 @@ body::after {
 
 @media (max-width: 639px) {
   .section-pad {
-    padding-right: calc(2.75rem + max(0.5rem, env(safe-area-inset-right)));
+    padding-right: 1rem;
   }
 
   main .text-\[9px\],
