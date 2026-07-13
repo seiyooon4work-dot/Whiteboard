@@ -1,12 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 
-// GitHub Pages 배포 기본 경로
-// 저장소 이름: HAFS-Eureka-Research-Project
-// Pages URL: https://inseoji219-eng.github.io/HAFS-Eureka-Research-Project/
 export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: command === 'build' ? '/Whiteboard/' : '/',
+  base: '/',
   cacheDir: 'node_modules/.vite-5176',
   server: {
     host: '0.0.0.0',
@@ -22,6 +19,7 @@ export default defineConfig(({ command }) => ({
   },
   build: {
     rollupOptions: {
+      external: ['motion/react', 'recharts', 'lucide-react'],
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],

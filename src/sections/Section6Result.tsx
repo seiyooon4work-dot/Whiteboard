@@ -96,7 +96,7 @@ export function Section6Result() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
         >
-          06 — 연구 결과
+          02 — SIMULATION RESULT
         </motion.p>
 
         <motion.h2
@@ -106,7 +106,7 @@ export function Section6Result() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
-          그래서, 가장 좋은<br className="hidden sm:block" /> 표면은 무엇일까요?
+          조절한 표면은<br className="hidden sm:block" /> 어떤 결과를 만들까요?
         </motion.h2>
 
         <motion.div

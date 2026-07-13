@@ -17,10 +17,6 @@ import { ModelExplanation } from '../components/reflection/ModelExplanation'
 import { calculateReflectionStabilityScore } from '../lib/unifiedSurface'
 import { calcInputCoherence } from '../lib/simulation'
 
-const SurfaceScene = lazy(() =>
-  import('../components/reflection/SurfaceScene').then((module) => ({ default: module.SurfaceScene }))
-)
-
 const ReflectionChart = lazy(() =>
   import('../components/reflection/ReflectionChart').then((module) => ({ default: module.ReflectionChart }))
 )
@@ -108,7 +104,6 @@ export function Section5Lab() {
   )
   const [mobileAnalysisOpen, setMobileAnalysisOpen] = useState(false)
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
-  const [mobile3DOpen, setMobile3DOpen] = useState(false)
   const {
     inputs,
     setInput,
@@ -145,7 +140,7 @@ export function Section5Lab() {
     : `거칠기 ${surfaceParams.roughness.toFixed(2)} · 홈 ${surfaceParams.grooveDepth.toFixed(2)}`
 
   return (
-    <section id="lab" ref={ref} className="relative section-pad overflow-hidden">
+    <section id="simulator" ref={ref} className="relative section-pad overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -169,7 +164,7 @@ export function Section5Lab() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
-          <p className="section-label mb-3">05 — 통합 연구 시뮬레이션</p>
+          <p className="section-label mb-3">01 — SURFACE SIMULATOR</p>
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(480px,1.15fr)] lg:items-end">
             <div>
               <h2
@@ -179,7 +174,7 @@ export function Section5Lab() {
                 최적 표면 찾기
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-                최종 적합도와 반사 조건을 함께 확인합니다.
+                슬라이더로 표면을 설계하고, 반사·가시성·사용 균형을 한 화면에서 확인합니다.
               </p>
             </div>
 
@@ -490,65 +485,27 @@ export function Section5Lab() {
             <PresetButtons selectedMaterial={selectedMaterial} onSelect={selectMaterial} />
           </div>
 
-          <div
-            className="flex min-w-0 flex-col gap-5 self-start"
-          >
-            <div
-              className="hidden min-w-0 rounded-2xl p-3 sm:block sm:p-4"
-              style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}
-            >
-              <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <p className="section-label mb-1">3D 참고</p>
-                  <h3 className="font-display text-lg font-bold text-ivory">표면 형태</h3>
+          <div className="glass-card min-w-0 self-start p-5">
+            <p className="section-label mb-1">SIMULATION LOOP</p>
+            <h3 className="mb-3 font-display text-lg font-bold text-ivory">값 하나를 움직이면 결과가 함께 바뀝니다.</h3>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+              입력값은 표면 모델과 반사 지표를 거쳐 최종 적합도와 좌석별 가시성으로 연결됩니다.
+              아래 순서대로 비교하면 어떤 조건이 균형을 만드는지 빠르게 찾을 수 있습니다.
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              {[
+                ['A', '슬라이더 입력', '구조·거칠기·반사 조건'],
+                ['B', '2D 반사 검증', '정반사·난반사·눈부심'],
+                ['C', '결과 비교', '적합도·좌석별 가시성'],
+              ].map(([step, title, detail]) => (
+                <div key={step} className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(79,216,200,0.045)', border: '1px solid rgba(79,216,200,0.13)' }}>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg font-mono text-xs font-bold" style={{ background: 'rgba(79,216,200,0.14)', color: 'var(--aqua-bright)' }}>{step}</span>
+                  <span className="min-w-0">
+                    <strong className="block text-sm text-ivory">{title}</strong>
+                    <small className="mt-0.5 block text-xs" style={{ color: 'var(--ivory-dim)' }}>{detail}</small>
+                  </span>
                 </div>
-                <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
-                  판단 기준은 2D
-                </span>
-              </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-                3D 화면은 표면 형태와 광선 방향을 보여줍니다.
-                판단은 2D 단면, 반사각, 최종 적합도를 기준으로 봅니다.
-              </p>
-              <div className="mt-4">
-                {inView && !isMobile ? (
-                  <Suspense
-                    fallback={
-                      <div
-                        className="relative h-[240px] overflow-hidden rounded-xl sm:h-[340px] sm:rounded-2xl"
-                        style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }}
-                      />
-                    }
-                  >
-                    <SurfaceScene surface={reflectionResult.surface} samples={reflectionResult.samples} compact />
-                  </Suspense>
-                ) : (
-                  <div
-                    className="relative h-[240px] overflow-hidden rounded-xl sm:h-[340px] sm:rounded-2xl"
-                    style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="sm:hidden">
-              <button
-                type="button"
-                onClick={() => setMobile3DOpen((open) => !open)}
-                className="mobile-analysis-trigger"
-                aria-expanded={mobile3DOpen}
-              >
-                {mobile3DOpen ? '3D 표면 닫기' : '3D 표면 보기'}
-              </button>
-              {mobile3DOpen && (
-                <div className="mt-3">
-                  <Suspense
-                    fallback={<div className="h-[240px] rounded-xl" style={{ background: '#080A12', border: '1px solid rgba(46,63,102,0.72)' }} />}
-                  >
-                    <SurfaceScene surface={reflectionResult.surface} samples={reflectionResult.samples} compact />
-                  </Suspense>
-                </div>
-              )}
+              ))}
             </div>
           </div>
 

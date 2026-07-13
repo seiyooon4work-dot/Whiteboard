@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-sim/
 
 .DS_Store
 *.local
@@ -17,4 +18,3 @@ pnpm-debug.log*
 
 .idea/
 .vscode/
-
