@@ -1,8 +1,14 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { memo, useMemo } from 'react'
+import { Maximize2, Minimize2 } from 'lucide-react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { ReflectionSample, SurfaceData } from '../../types/simulation'
+import {
+  SURFACE_PHYSICAL_SCALE,
+  surfaceModelToMillimeters,
+  surfaceVerticalExaggeration,
+} from '../../lib/surfaceScale'
 
 type SurfaceSceneProps = {
   surface: SurfaceData
@@ -11,7 +17,11 @@ type SurfaceSceneProps = {
 }
 
 function toScenePoint(x: number, y: number, z: number): [number, number, number] {
-  return [x * 3, z * 4.8, y * 3]
+  return [
+    x * SURFACE_PHYSICAL_SCALE.horizontalSceneScale,
+    z * SURFACE_PHYSICAL_SCALE.verticalSceneScale,
+    y * SURFACE_PHYSICAL_SCALE.horizontalSceneScale,
+  ]
 }
 
 function toSceneVector(vector: { x: number; y: number; z: number }, scale: number): THREE.Vector3 {
@@ -118,12 +128,67 @@ function LightRays({ samples }: { samples: ReflectionSample[] }) {
 }
 
 export const SurfaceScene = memo(function SurfaceScene({ surface, samples, compact = false }: SurfaceSceneProps) {
+  const sceneRef = useRef<HTMLDivElement>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const heightSpan = surfaceModelToMillimeters(Math.max(0, surface.maxHeight - surface.minHeight))
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === sceneRef.current)
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.fullscreenElement) {
+        setIsFullscreen(false)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
+  const toggleFullscreen = async () => {
+    const scene = sceneRef.current
+    if (!scene) return
+
+    if (document.fullscreenElement === scene) {
+      await document.exitFullscreen?.()
+      return
+    }
+
+    if (isFullscreen && !document.fullscreenElement) {
+      setIsFullscreen(false)
+      return
+    }
+
+    if (document.fullscreenElement) {
+      await document.exitFullscreen?.()
+    }
+
+    if (scene.requestFullscreen) {
+      try {
+        await scene.requestFullscreen()
+        return
+      } catch {
+        // 일부 모바일 브라우저는 일반 요소의 네이티브 전체화면을 허용하지 않는다.
+      }
+    }
+
+    setIsFullscreen(true)
+  }
+
   return (
     <div
-      className={`relative ${compact ? 'h-[260px] sm:h-[340px]' : 'h-[420px] sm:h-[560px]'} overflow-hidden rounded-2xl`}
-      style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }}
+      ref={sceneRef}
+      className={`relative ${isFullscreen ? 'fixed inset-0 z-[80] h-[100dvh] w-screen rounded-none' : compact ? 'h-[260px] sm:h-[340px] rounded-2xl' : 'h-[420px] sm:h-[560px] rounded-2xl'} overflow-hidden`}
+      style={{ border: isFullscreen ? 'none' : '1px solid rgba(46,63,102,0.72)', background: '#080A12' }}
     >
-      <div className="h-full w-full pointer-events-none sm:pointer-events-auto">
+      <div className="h-full w-full">
         <Canvas
           camera={{ position: [4.9, 4.5, 5.7], fov: 39 }}
           dpr={[1, 1.5]}
@@ -142,13 +207,65 @@ export const SurfaceScene = memo(function SurfaceScene({ surface, samples, compa
         </Canvas>
       </div>
 
-      <div className="absolute left-4 top-4 flex gap-3 text-xs font-mono">
-        <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,138,61,0.12)', color: 'var(--amber-bright)' }}>
-          입사광
-        </span>
-        <span className="rounded-full px-3 py-1" style={{ background: 'rgba(79,216,200,0.12)', color: 'var(--aqua-bright)' }}>
-          반사광
-        </span>
+      <div className="absolute inset-x-4 top-4 z-10 flex items-start justify-between gap-3">
+        <div className="flex flex-wrap gap-2 text-xs font-mono">
+          <span className="rounded-full px-3 py-1" style={{ background: 'rgba(255,138,61,0.12)', color: 'var(--amber-bright)' }}>
+            입사광
+          </span>
+          <span className="rounded-full px-3 py-1" style={{ background: 'rgba(79,216,200,0.12)', color: 'var(--aqua-bright)' }}>
+            반사광
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? '전체화면 닫기' : '3D 표면 전체화면으로 보기'}
+          title={isFullscreen ? '전체화면 닫기' : '전체화면으로 보기'}
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-subtitle font-bold transition-colors"
+          style={{
+            background: 'rgba(8,10,18,0.78)',
+            border: '1px solid rgba(79,216,200,0.34)',
+            color: 'var(--ivory)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          {isFullscreen ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />}
+          <span className="hidden sm:inline">{isFullscreen ? '닫기' : '전체화면'}</span>
+        </button>
+      </div>
+
+      <div className="pointer-events-none absolute bottom-4 left-4 text-[11px]" style={{ color: 'rgba(245,240,232,0.64)' }}>
+        드래그하여 회전 · 휠로 확대
+      </div>
+
+      <div
+        className="pointer-events-none absolute bottom-3 right-3 min-w-[178px] rounded-xl px-3 py-2 text-[10px] leading-relaxed sm:bottom-4 sm:right-4"
+        style={{
+          background: 'rgba(8,10,18,0.78)',
+          border: '1px solid rgba(245,240,232,0.16)',
+          color: 'var(--ivory-dim)',
+          backdropFilter: 'blur(10px)',
+        }}
+        aria-label={`밀리미터 척도. 평면 범위 ${SURFACE_PHYSICAL_SCALE.planeSideInModelUnits.toFixed(1)} 곱하기 ${SURFACE_PHYSICAL_SCALE.planeSideInModelUnits.toFixed(1)} 밀리미터, 높이 변화 ${heightSpan.toFixed(3)} 밀리미터, 수직 표현 배율 ${surfaceVerticalExaggeration.toFixed(1)}배`}
+      >
+        <div className="mb-1.5 flex items-center justify-between gap-3">
+          <span className="font-subtitle font-bold tracking-widest" style={{ color: 'var(--ivory)' }}>척도</span>
+          <span className="font-mono" style={{ color: 'var(--aqua-bright)' }}>{SURFACE_PHYSICAL_SCALE.unit} 기준</span>
+        </div>
+        <div className="mb-1 flex items-center gap-2 font-mono" style={{ color: 'var(--ivory)' }}>
+          <span className="relative inline-block h-2 w-16 shrink-0">
+            <span className="absolute inset-x-0 top-1 border-t" style={{ borderColor: 'var(--aqua-bright)' }} />
+            <span className="absolute left-0 top-0 h-2 border-l" style={{ borderColor: 'var(--aqua-bright)' }} />
+            <span className="absolute right-0 top-0 h-2 border-r" style={{ borderColor: 'var(--aqua-bright)' }} />
+          </span>
+          <span>1.0 {SURFACE_PHYSICAL_SCALE.unit}</span>
+        </div>
+        <div className="font-mono">
+          평면 {SURFACE_PHYSICAL_SCALE.planeSideInModelUnits.toFixed(1)} × {SURFACE_PHYSICAL_SCALE.planeSideInModelUnits.toFixed(1)} {SURFACE_PHYSICAL_SCALE.unit} · 높이 Δz {heightSpan.toFixed(3)} {SURFACE_PHYSICAL_SCALE.unit}
+        </div>
+        <div className="font-mono" style={{ color: 'rgba(245,240,232,0.56)' }}>
+          수직 표현 {surfaceVerticalExaggeration.toFixed(1)}배 · 1 모델 단위 = 1 {SURFACE_PHYSICAL_SCALE.unit}
+        </div>
       </div>
     </div>
   )

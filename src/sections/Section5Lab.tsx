@@ -21,6 +21,10 @@ const ReflectionChart = lazy(() =>
   import('../components/reflection/ReflectionChart').then((module) => ({ default: module.ReflectionChart }))
 )
 
+const SurfaceScene = lazy(() =>
+  import('../components/reflection/SurfaceScene').then((module) => ({ default: module.SurfaceScene }))
+)
+
 const pct = (value: number) => `${(value * 100).toFixed(1)}%`
 
 function SummaryMetric({ label, value, tone = 'aqua' }: { label: string; value: string; tone?: 'aqua' | 'amber' | 'ivory' }) {
@@ -104,6 +108,7 @@ export function Section5Lab() {
   )
   const [mobileAnalysisOpen, setMobileAnalysisOpen] = useState(false)
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
+  const [mobile3DOpen, setMobile3DOpen] = useState(false)
   const {
     inputs,
     setInput,
@@ -486,6 +491,48 @@ export function Section5Lab() {
           </div>
 
           <div className="glass-card min-w-0 self-start p-5">
+            <div className="mb-5 hidden min-w-0 rounded-2xl p-3 sm:block sm:p-4" style={{ background: 'rgba(13,17,32,0.28)', border: '1px solid rgba(46,63,102,0.38)' }}>
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="section-label mb-1">3D 표면 탐색</p>
+                  <h3 className="font-display text-lg font-bold text-ivory">표면 형태와 광선 방향</h3>
+                </div>
+                <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
+                  드래그하여 회전
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
+                표면의 높이 변화와 입사·반사광 방향을 입체로 확인합니다. 오른쪽 위 버튼을 누르면 전체화면에서 더 크게 볼 수 있습니다.
+              </p>
+              <div className="mt-4">
+                {inView ? (
+                  <Suspense fallback={<div className="relative h-[240px] overflow-hidden rounded-xl sm:h-[340px] sm:rounded-2xl" style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }} />}>
+                    <SurfaceScene surface={reflectionResult.surface} samples={reflectionResult.samples} compact />
+                  </Suspense>
+                ) : (
+                  <div className="relative h-[240px] overflow-hidden rounded-xl sm:h-[340px] sm:rounded-2xl" style={{ border: '1px solid rgba(46,63,102,0.72)', background: '#080A12' }} />
+                )}
+              </div>
+            </div>
+
+            <div className="mb-5 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setMobile3DOpen((open) => !open)}
+                className="mobile-analysis-trigger"
+                aria-expanded={mobile3DOpen}
+              >
+                {mobile3DOpen ? '3D 표면 닫기' : '3D 표면 보기'}
+              </button>
+              {mobile3DOpen && (
+                <div className="mt-3">
+                  <Suspense fallback={<div className="h-[240px] rounded-xl" style={{ background: '#080A12', border: '1px solid rgba(46,63,102,0.72)' }} />}>
+                    <SurfaceScene surface={reflectionResult.surface} samples={reflectionResult.samples} compact />
+                  </Suspense>
+                </div>
+              )}
+            </div>
+
             <p className="section-label mb-1">SIMULATION LOOP</p>
             <h3 className="mb-3 font-display text-lg font-bold text-ivory">값 하나를 움직이면 결과가 함께 바뀝니다.</h3>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>

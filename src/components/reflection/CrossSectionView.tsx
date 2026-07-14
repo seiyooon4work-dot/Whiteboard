@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import type { ReflectionSample, SurfaceData } from '../../types/simulation'
+import { formatSurfaceMillimeters, surfaceModelToMillimeters } from '../../lib/surfaceScale'
 
 type CrossSectionViewProps = {
   surface: SurfaceData
@@ -43,10 +44,13 @@ function makeSmoothPath(points: Array<[number, number]>): string {
 export const CrossSectionView = memo(function CrossSectionView({ surface, samples, emphasis = false }: CrossSectionViewProps) {
   const mid = Math.floor(surface.size / 2)
   const centerHeight = (surface.minHeight + surface.maxHeight) / 2
+  const halfHeightSpan = Math.max(0.001, (surface.maxHeight - surface.minHeight) / 2)
   const sectionPoints = surface.points[mid].map((point) => [sx(point.x), sy(point.z, centerHeight)] as [number, number])
   const surfacePath = makeSmoothPath(sectionPoints)
   const fillPath = `${surfacePath} L ${X_MAX} 224 L ${X_MIN} 224 Z`
   const visibleSamples = samples
+  const xTicks = [-1, -0.5, 0, 0.5, 1]
+  const zTicks = [-1, 0, 1]
 
   return (
     <div
@@ -93,6 +97,44 @@ export const CrossSectionView = memo(function CrossSectionView({ surface, sample
         ))}
         <path d={fillPath} fill="url(#surface-fill)" stroke="none" />
         <path d={surfacePath} fill="none" stroke="#4FD8C8" strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" />
+
+        {/* ── 실제 단위 척도 ────────────────────────────────── */}
+        <g aria-label="실제 단위 밀리미터 척도">
+          <line x1={X_MIN} x2={X_MAX} y1="230" y2="230" stroke="rgba(245,240,232,0.42)" strokeWidth="1" />
+          {xTicks.map((value) => {
+            const x = sx(value)
+            const label = formatSurfaceMillimeters(surfaceModelToMillimeters(value))
+            return (
+              <g key={`x-tick-${value}`}>
+                <line x1={x} x2={x} y1="226" y2="234" stroke="rgba(245,240,232,0.58)" strokeWidth="1" />
+                <text x={x} y="246" textAnchor="middle" fontSize="11" fill="rgba(245,240,232,0.72)" fontFamily="JetBrains Mono, monospace">
+                  {label}
+                </text>
+              </g>
+            )
+          })}
+          <text x={X_MAX} y="255" textAnchor="end" fontSize="10" fill="rgba(160,152,136,0.78)" fontFamily="Pretendard">
+            x · mm
+          </text>
+
+          <line x1="30" x2="30" y1="24" y2="224" stroke="rgba(245,240,232,0.42)" strokeWidth="1" />
+          {zTicks.map((fraction) => {
+            const value = centerHeight + fraction * halfHeightSpan
+            const y = sy(value, centerHeight)
+            const label = formatSurfaceMillimeters(surfaceModelToMillimeters(fraction * halfHeightSpan), 3)
+            return (
+              <g key={`z-tick-${fraction}`}>
+                <line x1="26" x2="34" y1={y} y2={y} stroke="rgba(245,240,232,0.58)" strokeWidth="1" />
+                <text x="21" y={y + 4} textAnchor="end" fontSize="10" fill="rgba(245,240,232,0.72)" fontFamily="JetBrains Mono, monospace">
+                  {label}
+                </text>
+              </g>
+            )
+          })}
+          <text x="30" y="17" textAnchor="middle" fontSize="10" fill="rgba(160,152,136,0.78)" fontFamily="Pretendard">
+            z · mm
+          </text>
+        </g>
 
         {visibleSamples.map((sample) => {
           const x = sx(sample.x)
