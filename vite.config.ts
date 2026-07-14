@@ -19,7 +19,6 @@ export default defineConfig(({ command }) => ({
   },
   build: {
     rollupOptions: {
-      external: ['motion/react', 'recharts', 'lucide-react'],
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
