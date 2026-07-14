@@ -25,7 +25,6 @@ export default defineConfig(({ command }) => ({
           react: ['react', 'react-dom'],
           animation: ['motion', 'gsap', '@gsap/react', 'lenis'],
           three: ['three', '@react-three/fiber', '@react-three/drei'],
-          charts: ['recharts'],
         },
       },
     },
